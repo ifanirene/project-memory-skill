@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Memory"
+  short_description: "Scaffold durable project memory and repo structure"
+  default_prompt: "Use $project-memory to scaffold or maintain a durable repo memory system with a minimal core of ANALYSIS_INDEX.md, branch NOTES.md, and docs/LESSONS.md, plus clear file placement rules and shared pipeline docs only when needed."
