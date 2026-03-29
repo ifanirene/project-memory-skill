@@ -46,6 +46,19 @@ memory outside the repo.
 - Use automation incrementally: daily or weekly maintenance loops should process
   only new or updated signals after bootstrap, and should always write a clear
   decision log.
+- Keep loop ownership separate: daily distills signals, weekly updates repo
+  memory docs, and monthly consolidates reflections, axioms, and mirrors.
+
+## Automation Model
+
+The skill is designed to work with three non-overlapping maintenance loops:
+
+- daily signal distillation into an external long-term-memory workspace
+- weekly repo-memory maintenance driven by a bounded maintenance queue
+- monthly cross-repo axiom review and mirror generation
+
+The monthly loop is implemented as a weekly-scheduled automation with a 28-day
+gate when native monthly scheduling is unavailable.
 
 ## Repository Layout
 
@@ -57,7 +70,7 @@ project-memory-skill/
 └── references/
     ├── doc_contract.md
     ├── personal_memory_bridge.md
-    └── repo_structure.md
+    ├── repo_structure.md
     └── scheduled_loops.md
 ```
 
@@ -83,13 +96,15 @@ Ask Codex to use the skill when you want to:
 - define stable homes for scripts, data, outputs, and docs
 - add a note-to-lessons promotion rule
 - pair repo memory with an external long-term-memory workspace
+- define daily, weekly, and monthly memory-maintenance loops
 
 Example prompt:
 
 ```text
 Use $project-memory to clean up this repo's analysis documentation contract,
 make file placement predictable, promote durable lessons from notes, and pair
-the repo with an external long-term-memory workspace without bloating repo docs.
+the repo with an external long-term-memory workspace and three-level automated
+maintenance without bloating repo docs.
 ```
 
 ## Included References
@@ -99,8 +114,8 @@ the repo with an external long-term-memory workspace without bloating repo docs.
 - `references/repo_structure.md`: branch-root file placement guidance
 - `references/personal_memory_bridge.md`: external observations, reflections,
   axioms, and mirror rules
-- `references/scheduled_loops.md`: daily and weekly automation guidance for
-  incremental maintenance and logging
+- `references/scheduled_loops.md`: daily, weekly, and monthly automation
+  guidance for incremental maintenance, validation, and logging
 
 ## Sharing Notes
 

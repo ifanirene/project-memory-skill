@@ -207,6 +207,31 @@ full session JSONL files. Process only new or updated dialog or repo signals
 after the first bootstrap run. Treat non-main worktrees as provisional sources
 until merged or independently repeated.
 
+## Scheduled maintenance
+
+When pairing this skill with automation, prefer three non-overlapping loops:
+
+- daily signal distillation: read only new repo or dialog signals, update
+  manifests, extracts, observations, cursor state, repo-maintenance queue
+  entries, and a daily log
+- weekly repo-memory maintenance: consume the queue plus unresolved gaps,
+  update repo docs in canonical main worktrees, apply repo-local
+  `NOTES.md -> docs/LESSONS.md` promotions, and complete `## Cross-document
+  review`
+- monthly axiom review: run on a weekly schedule with a 28-day gate if needed,
+  promote observations into reflections and axioms, update repo mirror
+  candidates, and write a monthly log
+
+Keep loop ownership explicit:
+
+- the daily loop should not update reflections, axioms, or repo mirrors
+- the weekly loop should not update reflections or axioms
+- the monthly loop should not edit repo docs directly
+
+Start weekly auto-edits in a bounded validation phase on representative fixture
+notes before widening to full coverage. During validation, defer non-scope
+items instead of silently expanding the edit surface.
+
 ## New-project bootstrap
 
 When the repo is new or only lightly structured, prefer this order:
@@ -312,5 +337,5 @@ repo memory document.
 - `references/repo_structure.md`: copy-ready repo structure and placement rules
 - `references/personal_memory_bridge.md`: shareable guidance for the optional
   external personal-memory workspace and promotion ladder
-- `references/scheduled_loops.md`: shareable guidance for incremental daily and
-  weekly memory-maintenance automations
+- `references/scheduled_loops.md`: shareable guidance for incremental daily,
+  weekly, and monthly memory-maintenance automations

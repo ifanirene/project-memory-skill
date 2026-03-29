@@ -17,7 +17,10 @@ long-term-memory/
 ├── REPO_REGISTRY.md
 ├── state/
 │   ├── dialog_cursor.json
-│   └── repo_cursors.json
+│   ├── monthly_cycle.json
+│   ├── repo_cursors.json
+│   ├── repo_maintenance_queue.json
+│   └── weekly_rollout.json
 ├── logs/
 │   └── runs/
 ├── dialogs/
@@ -36,6 +39,9 @@ long-term-memory/
 
 Keep raw dialog logs and raw repo histories in their original systems. Store
 only source pointers, distilled extracts, and promoted memory here.
+
+Use separate run logs per loop such as `YYYY-MM-DD_daily.md`,
+`YYYY-MM-DD_weekly.md`, and `YYYY-MM-DD_monthly.md`.
 
 ## Promotion model
 
@@ -66,6 +72,20 @@ Possible sources include:
 - Codex dialogs
 - automation decision logs
 
+## Loop ownership
+
+Keep loop ownership explicit so promotions do not overlap:
+
+- daily loop: update session manifests, dialog extracts, repo observations,
+  dialog observations, cursor state, and repo-maintenance queue entries
+- weekly loop: update repo docs and repo-local `NOTES.md -> docs/LESSONS.md`
+  promotions
+- monthly loop: update `REFLECTIONS.md`, `AXIOMS.md`, and repo mirror
+  candidates
+
+The daily loop should not update reflections, axioms, or mirrors. The monthly
+loop should not edit repo docs directly.
+
 ## Dialog distillation rules
 
 Distill Codex dialogs. Do not copy raw session bodies.
@@ -82,6 +102,8 @@ Keep only:
 
 - source path or session id
 - timestamps or last updated markers
+- processed-through event boundary for sessions that continue across multiple
+  maintenance runs
 - short quoted snippets when necessary
 - paraphrased candidate principles
 - confidence and recurrence notes
