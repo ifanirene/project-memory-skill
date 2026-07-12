@@ -15,11 +15,13 @@ Use or adapt a layout like this:
 long-term-memory/
 ├── AGENTS.md
 ├── REPO_REGISTRY.md
+├── config/
+│   └── repos.json
 ├── state/
 │   ├── dialog_cursor.json
 │   ├── monthly_cycle.json
-│   ├── repo_cursors.json
-│   ├── repo_maintenance_queue.json
+│   ├── repo_cursors_v2.json
+│   ├── maintenance_queue_v2.json
 │   └── weekly_rollout.json
 ├── logs/
 │   └── runs/
@@ -40,8 +42,8 @@ long-term-memory/
 Keep raw dialog logs and raw repo histories in their original systems. Store
 only source pointers, distilled extracts, and promoted memory here.
 
-Use separate run logs per loop such as `YYYY-MM-DD_daily.md`,
-`YYYY-MM-DD_weekly.md`, and `YYYY-MM-DD_monthly.md`.
+Use unique run-ID logs such as `<run-id>_weekly-collector.md`,
+`<run-id>_weekly-<repo>.md`, and `<run-id>_monthly.md`.
 
 ## Promotion model
 
@@ -72,19 +74,27 @@ Possible sources include:
 - Codex dialogs
 - automation decision logs
 
+Classify automation-only lessons as `automation_operations`. Keep them out of
+personal axioms unless the user explicitly endorses them as personal decision
+rules.
+
 ## Loop ownership
 
 Keep loop ownership explicit so promotions do not overlap:
 
-- daily loop: update session manifests, dialog extracts, repo observations,
-  dialog observations, cursor state, and repo-maintenance queue entries
-- weekly loop: update repo docs and repo-local `NOTES.md -> docs/LESSONS.md`
-  promotions
-- monthly loop: update `REFLECTIONS.md`, `AXIOMS.md`, and repo mirror
-  candidates
+- weekly central collection: update repo observations, repo cursors, and
+  maintenance queue entries without editing monitored repos
+- weekly repo-local maintenance: update one repo's docs, apply repo-local
+  `NOTES.md -> docs/LESSONS.md` promotions, and resolve its claimed queue items
+- monthly review: collect new dialog signals and update `REFLECTIONS.md`,
+  `AXIOMS.md`, and repo mirror candidates
 
-The daily loop should not update reflections, axioms, or mirrors. The monthly
-loop should not edit repo docs directly.
+The weekly collector should not update reflections, axioms, or mirrors. The
+monthly loop should not edit repo docs directly.
+
+Use `scripts/memoryctl.py` for deterministic access checks, bounded collection,
+proposal validation, locking, cursor updates, and atomic state writes. Keep
+semantic summarization and generalization in the LLM proposal step.
 
 ## Dialog distillation rules
 

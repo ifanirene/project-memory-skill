@@ -1,0 +1,14 @@
+.env
+.DS_Store
+.pytest_cache/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Computational-biology inputs and generated outputs
+/data/**
+/results/**
+!/results/**/
+!/results/**/NOTES.md
+!/results/**/analysis_manifest.json
+

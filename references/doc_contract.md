@@ -64,18 +64,26 @@ If the repo uses `docs/LESSONS.md` (or another established equivalent), treat
 that file as the memory document for the project. Do not add a second
 `memory.md` unless the repo already uses that naming.
 
-## Valid note archetypes
+`AGENTS.md` may be maintained, but require explicit user permission before
+removing, weakening, or materially rewriting environment paths and versions,
+security rules, execution requirements, mandatory validation commands,
+infrastructure instructions, or user-authored approval requirements. An
+unattended cleanup run must defer such a change rather than infer permission.
 
-Do not assume every durable `NOTES.md` is a plain runbook. Common valid
-archetypes include:
+## Note shapes
+
+Do not assume every durable `NOTES.md` is a plain runbook. Useful shapes
+include:
 
 - branch runbook
 - child variant note
 - synthesis or staging note
-- chronology hub or legacy note
+- compact provenance appendix when sequence changes current interpretation
 
-Preserve the archetype that answers the durable question. Add a short scope
-statement when the note shape might otherwise confuse future contributors.
+Choose the shape that answers the durable question now. Existing chronology or
+legacy structure is not protected. Rewrite it when the current question,
+answer, evidence, reproduction path, limitations, or next decision are hard to
+find.
 
 ## New-project bootstrap order
 
@@ -109,6 +117,16 @@ Do not:
   personal memory also need changes
 - copy raw chat transcripts or full dialog exports into the repo
 
+If the repo needs the minimal scaffold created, prefer the bundled helper
+first:
+
+```bash
+python "$CODEX_HOME/skills/project-memory/scripts/bootstrap_repo_memory.py" \
+  --repo /path/to/repo --audit-only
+```
+
+Then scaffold only the missing items after reviewing the report.
+
 ## Suggested repo-guide wording
 
 ```md
@@ -118,10 +136,18 @@ not let them become interchangeable scratchpads.
 
 - `ANALYSIS_INDEX.md` = repo-wide map. It answers: what exists, where it lives,
   which version is current, and what is superseded.
-- `results/.../NOTES.md` = branch-level runbook. One maintained analysis
-  branch should usually have one parent note file at the shared root. It
-  should capture only the minimum durable context needed to rerun, extend, or
-  review that branch.
+- `results/.../NOTES.md` = scientific narrative and branch-level decision
+  record. One maintained analysis branch should usually have one parent note.
+- `results/.../runs/<variant>/analysis_manifest.json` = exact execution record
+  for provenance-sensitive analytical variants. Keep commands, resolved
+  parameters, inputs, outputs, code provenance, and validation there.
+- Do not require a separate manifest for presentation-only exports when their
+  source analytical variant is clear.
+- Use the parent note to identify the current and retained variants and explain
+  why one is preferred; do not duplicate manifest fields there.
+- If script logic changes in a way that changes output semantics, save the new
+  behavior under a new script path/name instead of silently reusing the old
+  path.
 - `docs/LESSONS.md` = distilled repo-facing project memory across analyses,
   including reusable heuristics, stable repo preferences, and recurring checks
   that should shape future work here.
@@ -134,6 +160,10 @@ not let them become interchangeable scratchpads.
   mirror only repo-relevant distilled guidance back into `docs/LESSONS.md`.
 - Every analysis session should review all three evolving layers together:
   branch `NOTES.md`, `ANALYSIS_INDEX.md`, and `docs/LESSONS.md`.
+- `AGENTS.md` may evolve, but changes to environment paths or versions,
+  security rules, execution requirements, mandatory validation commands, and
+  approval requirements need explicit user permission tied to the proposed
+  change. Preserve those facts during general cleanup.
 ```
 
 ## Suggested analysis-index intro
@@ -155,8 +185,8 @@ Add a rule like this if the index is drifting:
   tweaks inside an existing analysis; those belong in that analysis's
   `NOTES.md` unless the work becomes a distinct maintained branch.
 - Keep same-direction variations, parameter sweeps, and sibling `runs/*`
-  outputs under the parent branch's `NOTES.md` unless a variation becomes its
-  own maintained branch.
+  outputs under one parent branch. Store execution facts in variant manifests
+  and scientific comparison in the parent `NOTES.md`.
 ```
 
 ## Suggested lessons intro
@@ -175,8 +205,9 @@ Add a rule like this if the index is drifting:
 Add durability rules like these when lessons drift into fact collection:
 
 ```md
-- Before adding to `docs/LESSONS.md`, rewrite the observation as a `Default`,
-  `Check`, `Trap`, or `Preference`. If it cannot be phrased that way without
+- Before adding to `docs/LESSONS.md`, start the observation with the literal
+  prefix `Default:`, `Check:`, `Trap:`, or `Preference:` and state a trigger,
+  action, and reason. If it cannot be phrased that way without
   naming one branch, one figure, or one dataset-specific result, keep it in
   `NOTES.md` instead.
 - Keep personal-only or cross-repo-only interaction patterns in the external
@@ -190,7 +221,7 @@ Add durability rules like these when lessons drift into fact collection:
 ACTIVE | FINAL | ARCHIVED — last updated: YYYY-MM-DD
 
 ## Note archetype
-branch runbook | child variant | synthesis/staging | chronology hub
+branch runbook | child variant | synthesis/staging | provenance appendix
 
 ## Question
 [one sentence: what this analysis is trying to answer]
@@ -198,32 +229,42 @@ branch runbook | child variant | synthesis/staging | chronology hub
 ## Branch scope
 [one sentence: what variations belong in this file, and what would count as a new branch]
 
-## Variants tracked here
-- `[label]`: [what changed, why it exists, and whether it is current / superseded / exploratory]
+## Current answer
+[the shortest defensible claim supported by the current artifacts]
 
-## Final run
-```bash
-python scripts/... --arg1 val --arg2 val \
-  --input <path> --output <path>
-```
+## Evidence
+- [result or validation that directly supports the current answer]
 
-## Key decisions
-- [decision]: [why this became the active choice]
+## Analytical variants
+- Current: `runs/<variant>/analysis_manifest.json` — [why it is preferred]
+- Retained comparison: `runs/<variant>/analysis_manifest.json` — [why it remains useful]
+- Manifest decision: [required | not required — presentation-only or transient reason]
 
-## Validation
-- [what was checked, what passed, and any caveat that still matters]
+## Trust status
+[what is validated and what remains uncertain]
 
-## Dead ends
-1. [what was tried] — [why it was rejected]
+## Decisions shaping the current analysis
+- [decision and why it changes interpretation or reproduction]
+
+## Limitations
+- [caveat that constrains trust or interpretation]
+
+## Next decision
+- [the next evidence or choice needed]
 
 ## Cross-document review
 - `ANALYSIS_INDEX.md`: [updated | no change — why]
 - `docs/LESSONS.md`: [updated | no change — why]
 - `Personal memory`: [updated | no change — why]
 
-## Open questions / next steps
-- [ ] ...
+## Provenance appendix
+[include only when sequence itself is needed to understand the current state]
 ````
+
+Rewrite these sections as one coherent current narrative instead of appending a
+dated section. Use the rewrite brief and kill-list protocol in
+`references/memory_quality.md`; keep a compact provenance appendix only when
+sequence itself changes interpretation.
 
 ## What not to keep
 
@@ -240,8 +281,14 @@ Remove or summarize content when it is mainly:
 
 Keep a note only if it helps a future contributor answer one of these:
 
-- What should I run?
+- Which result should I trust or prefer?
 - What should I trust?
 - What should I check first?
 - What should I avoid repeating?
 - Where is the current version?
+
+For a provenance-sensitive variant, make sure its manifest answers:
+
+- Which exact command produced this output?
+- Which exact inputs did that command use?
+- Which resolved parameters produced it?

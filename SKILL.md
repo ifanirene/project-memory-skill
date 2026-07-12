@@ -3,8 +3,9 @@ name: project-memory
 description: Use when a user wants to scaffold or clean up the durable memory
   and repo-organization system for a long-lived project, especially to define
   clear roles for repo rules, an analysis index, branch notes, reusable
-  lessons, shared pipeline docs, predictable file placement, and an optional
-  external personal-memory bridge.
+  lessons, selective analysis manifests, shared pipeline docs, new-repo
+  computational-biology structure, monitored-repo drift repair, and an
+  optional external personal-memory bridge.
 ---
 
 # Project Memory
@@ -25,8 +26,10 @@ It is not a project file to create or maintain.
 - Analysis index (`ANALYSIS_INDEX.md` or equivalent): repo-wide map of
   maintained analyses or workstreams.
 - Per-analysis notes (`results/.../NOTES.md` or equivalent): the branch-level
-  runbook for rerunning, extending, and validating one maintained direction of
-  work.
+  scientific narrative, variant comparison, and decision record.
+- Analysis manifests (`results/.../runs/<variant>/analysis_manifest.json`):
+  machine-readable execution provenance for complex or repeatedly tailored
+  analytical variants; do not require them for presentation-only outputs.
 - Lessons (`docs/LESSONS.md` or equivalent): distilled repo-facing heuristics
   that should change future work in this repo.
 - Pipeline docs (`docs/pipelines/*.md` or equivalent): reusable workflow
@@ -36,6 +39,14 @@ It is not a project file to create or maintain.
 - Optional external personal-memory workspace: distilled user-specific
   preferences, troubleshooting strategies, accepted or rejected solution
   patterns, and decision rules kept outside the repo.
+
+Allow `AGENTS.md` to evolve, but require explicit user permission before
+removing, weakening, or materially rewriting protected information:
+environment names, paths, versions, or activation commands; security rules;
+execution requirements; mandatory validation commands; infrastructure
+instructions; and user-authored approval requirements. An unattended cleanup
+run must defer such a change. General permission to clean up documentation is
+not sufficient.
 
 When the repo uses `docs/LESSONS.md` (or another existing equivalent) for
 distilled cross-run memory, treat that file as the repo's memory document. Do
@@ -56,8 +67,10 @@ Prefer a small number of durable homes:
 
 - code and CLIs: one home such as `scripts/` or `src/`
 - raw/reference inputs: `data/` or another clearly named input area
-- branch outputs: `results/<branch-root>/...`
-- branch variants: `results/<branch-root>/runs/<variant>/...`
+- branch outputs: `results/<theme>/<branch-root>/...` when the repo groups work
+  by theme, otherwise `results/<branch-root>/...`
+- branch variants: `results/<theme>/<branch-root>/runs/<variant>/...` when the
+  repo groups work by theme, otherwise `results/<branch-root>/runs/<variant>/...`
 - reusable docs: `docs/`
 
 Avoid:
@@ -82,22 +95,60 @@ core evolving docs should be:
 but avoid adding more evolving doc layers unless they solve a real maintenance
 problem. Only add `docs/pipelines/*.md` when a shared workflow is complex
 enough that branch notes are no longer the right place for operating
-instructions.
+instructions. Conditional `analysis_manifest.json` files are execution records,
+not another narrative documentation layer.
+
+## Bootstrap helper
+
+This skill ships a conservative bootstrap/audit helper at
+`scripts/bootstrap_repo_memory.py`.
+
+Run it with `--mode new` to scaffold an expandable computational-biology
+workspace or `--mode monitored --audit-only` to report contract drift without
+reorganizing an established repo. `--mode auto` treats any existing core memory
+file as evidence that the repo is monitored.
+
+- repo guide: `AGENTS.md`
+- repo map: `ANALYSIS_INDEX.md`
+- lessons: `docs/LESSONS.md`
+- pipeline-doc home: `docs/pipelines/` in new-repo mode
+- code home: `scripts/` or `src/`
+- input home: `data/`
+- output home: `results/`
+- durable docs home: `docs/`
+
+In new-repo mode, also create common homes under `config/`, `data/`, `scripts/`,
+`notebooks/`, and `tests/`, and create a `.gitignore` that tracks notes and
+manifests while ignoring data and generated outputs. In monitored mode, report
+manifest and contract drift and make only missing-core scaffold actions.
+
+The helper must:
+
+- report what is already present
+- create only missing core files/directories
+- never rewrite existing files
+- flag plausible noncanonical equivalents for manual review instead of blindly
+  creating duplicates
+- avoid placeholder goal, analysis, variant, or `NOTES.md` files
+
+Default behavior is prompting mode before writes. Use `--audit-only` for a
+read-only report and `--yes` for noninteractive scaffolding. Read
+`references/repo_modes.md` before applying a setup or drift repair.
 
 ## Workflow
 
-1. Inspect the existing repo docs and naming conventions.
-2. Inspect top-level structure and current file-placement patterns.
-3. Decide whether the repo needs new files or clearer role statements in the
-   files it already has.
-   - For a new repo, scaffold the contract early instead of waiting until the
-     docs have already drifted.
-   - Start from the minimal 3-file mode; add extra doc types only when they
-     solve a real maintenance problem.
+1. Classify the repo as new or monitored. Read `references/repo_modes.md`.
+2. Inspect the existing repo docs, naming conventions, and file placement.
+3. For a new repo, create the expandable computational-biology structure and
+   list its tree in `AGENTS.md`. For a monitored repo, detect global contract
+   drift and repair the smallest governing rule before touching branch docs.
 4. Write the documentation and placement contract into the repo guide first.
-5. Make each long-lived doc answer one question:
+   Preserve protected `AGENTS.md` information unless the user explicitly
+   approves the exact change.
+5. Make each record answer one question:
    - index: what exists and where
-   - notes: how to rerun or extend this analysis
+   - notes: what the analysis currently means and which variant is preferred
+   - manifest: exactly what execution produced one analytical variant
    - lessons: what future work should do differently in this repo
    - pipeline docs: how a shared workflow operates
 6. Make each directory answer one question:
@@ -107,45 +158,54 @@ instructions.
    - where branch variants live
    - where durable docs live
 7. Tighten templates so they pull toward concise, durable content.
-8. Prune low-value text:
+8. Apply the selective manifest rule in `references/analysis_manifest.md`.
+   Require a native manifest for new provenance-sensitive runs; do not require
+   one for purely decorative outputs. Validate manifests with
+   `scripts/validate_analysis_manifest.py`.
+9. Prune low-value text:
    - remove chronological chatter
    - move branch-specific outcomes out of lessons
    - keep minor reruns out of the index
    - keep same-direction variants inside one parent note file
-   - avoid command dumps unless they are the final reproducible run
-9. On every new or continuing analysis session, review the branch `NOTES.md`,
+   - move commands, resolved parameters, input inventories, and artifact lists
+     into required manifests instead of duplicating them in notes
+10. On every new or continuing analysis session, review the branch `NOTES.md`,
    `ANALYSIS_INDEX.md`, and `docs/LESSONS.md` together before deciding what to
    update. Not every session should change all three files, but leaving the
    index or lessons unchanged should be a deliberate decision after review, not
    an omission.
-10. When a branch `NOTES.md` is created or updated, add a short
+11. When a branch `NOTES.md` is created or updated, add a short
     `Cross-document review` section that records whether
     `ANALYSIS_INDEX.md` changed, whether `docs/LESSONS.md` changed, and whether
     personal memory changed; if not, note briefly why no change was needed.
-11. If an external personal-memory workspace is configured, capture only
+12. If an external personal-memory workspace is configured, capture only
     distilled candidate signals there; do not duplicate repo docs or raw chat.
-12. Cross-link the docs so a future reader knows where to go next.
-13. When you need copy-ready wording or templates, read
+13. Cross-link the records so a future reader knows where to go next.
+14. When you need copy-ready wording or templates, read
     `references/doc_contract.md`, `references/repo_structure.md`,
     `references/personal_memory_bridge.md`, and
     `references/scheduled_loops.md`.
+15. When a repo is missing the minimal skeleton, prefer running
+    `scripts/bootstrap_repo_memory.py --repo <path> --audit-only` first, then
+    scaffold only the missing pieces if the report is clean.
 
 ## Note archetypes
 
-Not every valid `NOTES.md` file is the same shape. Preserve the archetype that
-answers the durable question:
+Not every valid `NOTES.md` file is the same shape. Choose the shape that best
+answers the durable question now:
 
 - branch runbook: the main rerun or extension guide for one maintained branch
 - child variant note: a subordinate note for a focused sidecar or parameter
   family that still belongs under a parent branch of record
 - synthesis or staging note: a durable note for manuscript assembly, figure
   staging, or other cross-branch synthesis
-- chronology hub or legacy note: a durable note that explains lineage,
-  provenance, or historical organization when a branch cannot yet be reduced to
-  a pure runbook
+- provenance appendix: a compact exception used only when sequence itself
+  changes the interpretation of the current result
 
-Do not flatten valid synthesis or chronology notes into the runbook template
-unless that clearly improves maintainability.
+Do not preserve an archetype merely because the file already uses it. Rewrite
+chronology and legacy logs into the current question, claim, evidence,
+reproduction, limitations, and next decision. Keep a provenance appendix only
+when the sequence is necessary to understand the current state.
 
 ## Promotion ladder
 
@@ -209,61 +269,70 @@ until merged or independently repeated.
 
 ## Scheduled maintenance
 
-When pairing this skill with automation, prefer three non-overlapping loops:
+Use two maintenance layers:
 
-- daily signal distillation: read only new repo or dialog signals, update
-  manifests, extracts, observations, cursor state, repo-maintenance queue
-  entries, and a daily log
-- weekly repo-memory maintenance: consume the queue plus unresolved gaps,
-  update repo docs in canonical main worktrees, apply repo-local
-  `NOTES.md -> docs/LESSONS.md` promotions, and complete `## Cross-document
-  review`
-- monthly axiom review: run on a weekly schedule with a 28-day gate if needed,
-  promote observations into reflections and axioms, update repo mirror
-  candidates, and write a monthly log
+- weekly: one central collector reads changed memory docs from all registered
+  repos, asks an LLM for a structured semantic proposal, and uses
+  `scripts/memoryctl.py` to validate and apply observations, cursors, and queue
+  state; later repo-local maintenance runs may edit only their own repo docs
+- monthly: collect new dialog signals, compare cross-repo observations, promote
+  reflections and axioms, and prepare repo mirror proposals without editing
+  repos directly
 
-Keep loop ownership explicit:
+Within the weekly collector, reserve a bounded round-robin sample of unchanged
+legacy `NOTES.md` and `docs/LESSONS.md` files. Use it to create source-backed
+quality items even when no recent edit triggered collection. Keep Phase B
+bounded to one or two large-note rewrites per run and require a narrative
+rewrite brief before chronology is removed or merged.
 
-- the daily loop should not update reflections, axioms, or repo mirrors
-- the weekly loop should not update reflections or axioms
-- the monthly loop should not edit repo docs directly
+Do not duplicate one cross-repo job across monitored repos. Run the collector
+once from the external workspace with read-only access to monitored repos and
+write access only to its own state.
 
-Start weekly auto-edits in a bounded validation phase on representative fixture
-notes before widening to full coverage. During validation, defer non-scope
-items instead of silently expanding the edit surface.
+When the user asks whether maintenance is genuinely functional, run a live
+maintenance test. Use the production collector, perform semantic review, apply
+real collector state, make only genuine repo-memory repairs, and leave the repo
+diff uncommitted for inspection. Do not create synthetic lessons or restore the
+changes afterward. Read `references/live_maintenance_test.md` and follow its
+protocol.
 
-## New-project bootstrap
+Use the following command only for a controller safety smoke check:
 
-When the repo is new or only lightly structured, prefer this order:
+```bash
+python "$CODEX_HOME/skills/project-memory/scripts/smoke_test_project_memory.py" \
+  --repo /path/to/project
+```
 
-1. Add the documentation contract to `AGENTS.md` or the repo guide.
-2. Define the top-level structure for code, inputs, outputs, and docs before
-   generated files start accumulating.
-3. Create `ANALYSIS_INDEX.md` (or equivalent) as the repo-wide map.
-4. Create `docs/LESSONS.md` (or equivalent) as the distilled project memory.
-5. Add the `NOTES.md` template to the repo guide so each analysis gets the same
-   runbook shape when it appears.
-6. Create `docs/pipelines/` only when a workflow is shared, multi-step, or
-   likely to be reused across analyses.
-7. If an external personal-memory workspace is part of the workflow, scaffold
-   it outside the repo rather than adding repo-local memory docs.
+The smoke harness restores its controlled writes and uses temporary collector
+state. Never present it as proof that semantic maintenance produced useful
+project changes.
 
-Do not over-scaffold:
+Keep the semantic and deterministic responsibilities separate:
 
-- do not create placeholder `NOTES.md` files for analyses that do not exist yet
-- do not create a new `NOTES.md` for every sibling variation under one branch
-- do not create `doc_contract.md` inside the project; it is a skill reference
-- do not create a separate `memory.md` when `docs/LESSONS.md` (or another
-  equivalent file) already serves as the repo's memory document
-- do not prefill `LESSONS.md` with generic advice that teaches nothing or with
-  vague personality notes that will not change future decisions
-- do not create multiple overlapping status docs that answer the same question
-- do not let pipeline docs become branch diaries
-- do not create new top-level folders for one-off outputs when an existing
-  branch root or artifact class already has a clear home
-- do not create raw-dialog archives inside the repo
-- do not promote one-off user comments or one-session troubleshooting details
-  directly into lessons or axioms
+- LLM: summarize, generalize, classify, compare semantically, and propose
+- controller: discover changed files, bound inputs, lock runs, validate schema
+  and provenance, enforce path and permission rules, update cursors, manage
+  queue lifecycle, and write atomically
+
+The weekly collector must not edit monitored repos. Repo-local maintenance must
+claim and resolve or defer its own queue items instead of leaving completed
+items permanently open. Any proposed protected `AGENTS.md` change without
+explicit permission must be deferred.
+
+Start repo-local auto-edits in a bounded validation phase. Require consecutive
+successful runs without protected-information regression, duplicate execution, or
+stale queue recurrence before widening coverage. Read
+`references/scheduled_loops.md` for the full protocol.
+
+## Repository modes
+
+- New: scaffold the common computational-biology homes and contract, but do not
+  invent goal or analysis branches.
+- Monitored: preserve established scientific organization, audit drift, repair
+  governing contracts, and migrate active branches incrementally. Do not apply
+  the new-repo tree wholesale or fabricate historical manifests.
+
+Read `references/repo_modes.md` for the complete behavior.
 
 ## Quality bar
 
@@ -272,9 +341,20 @@ Do not over-scaffold:
   better when the repo can stay organized without extra layers.
 - A future generated file should have one obvious home.
 - Put a short scope statement near the top of each long-lived doc.
-- Keep notes minimal but sufficient to rerun and trust the analysis.
+- Keep notes minimal but sufficient to understand and trust the analysis.
 - Keep one parent `NOTES.md` per maintained branch unless a child variation
   truly becomes its own branch of record.
+- For every provenance-sensitive analytical variant, write a valid
+  `analysis_manifest.json` in its own meaningfully named output directory.
+- Do not require manifests for presentation-only variants. Link them to their
+  source analytical variant instead.
+- Keep execution facts in manifests and scientific comparison, current choice,
+  and limitations in the parent note. Do not maintain two copies.
+- Prefer flat variant output directories: for most runs, save outputs directly
+  inside `<variant>/` instead of splitting them into artifact-type subfolders.
+- If script logic changes in a way that can change output semantics, save the
+  new behavior under a new script path/name rather than silently reusing the
+  old path.
 - Require an explicit review decision for the other long-lived docs whenever a
   branch note is updated: `ANALYSIS_INDEX.md` should be reviewed for map-status
   changes, `docs/LESSONS.md` for durable repo heuristics, and personal memory
@@ -282,13 +362,22 @@ Do not over-scaffold:
 - Keep lessons focused on distilled repo-facing wisdom: recurring heuristics,
   recurring traps, stable repo preferences, and checks that should change
   future work here.
-- Rewrite lessons in a durable form such as `Default`, `Check`, `Trap`, or
-  `Preference`; if an observation cannot survive that rewrite, it belongs in
-  notes or personal memory instead.
+- Update runbook current-state sections instead of appending a dated update by
+  default. Keep history only for result-changing decisions, supersession,
+  indispensable lineage, or provenance gaps.
+- Start every new or rewritten lesson with the literal prefix `Default:`,
+  `Check:`, `Trap:`, or `Preference:` and include a trigger, action, and reason.
+  Keep dates and source branches as optional provenance, not structure.
+- Treat line count and dated sections as review triggers, not automatic cleanup
+  decisions. For a substantial `NOTES.md` rewrite, use `paper-narrative` when
+  available: derive the brief, choose the claim-and-evidence arc, identify
+  missing evidence, and delete material on the kill list. Read
+  `references/memory_quality.md` for the full protocol.
 - Keep personal memory distilled: source pointers and extracts are fine, raw
   dialogs are not.
-- Keep automated maintenance incremental and logged: process only new or
-  updated signals after bootstrap and write a decision log every run.
+- Keep automated maintenance incremental and logged: prioritize new or updated
+  signals, reserve only a small bounded share for round-robin legacy quality
+  review, and write a decision log every run.
 
 ## Content test
 
@@ -319,6 +408,12 @@ repo memory document.
 - Rewrite the lessons intro so run-specific details go back to notes.
 - Add explicit placement rules when people keep asking where new outputs,
   figures, or generated tables should go.
+- Add the selective manifest contract when complex variants rely on note prose,
+  script defaults, or ad hoc metadata files for provenance.
+- Add a Git ignore exception when manifests under generated output roots are
+  not trackable.
+- Add a semantic script-versioning rule when reruns are no longer attributable
+  to one stable script path.
 - Add an explicit "this repo's memory document is `docs/LESSONS.md`" line when
   agents might otherwise invent a second memory file.
 - Backfill missing local `NOTES.md` files for indexed active analyses before
@@ -327,15 +422,24 @@ repo memory document.
 - Separate repo-facing lessons from personal-only memory when
   `docs/LESSONS.md` has become a dumping ground for user-specific patterns that
   should live outside the repo.
-- Add note-archetype labels or scope statements when valid synthesis or
-  chronology notes keep being mistaken for broken runbooks.
+- Rewrite chronology-heavy notes around the current question, claim, evidence,
+  reproduction path, limitations, and next decision; keep only a compact
+  provenance appendix when sequence itself matters.
 
 ## Reference
 
 - `references/doc_contract.md`: copy-ready scope statements, rules, and note
   templates for new projects
 - `references/repo_structure.md`: copy-ready repo structure and placement rules
+- `references/repo_modes.md`: distinct new-repo setup and monitored-repo drift
+  repair workflows
+- `references/analysis_manifest.md`: manifest decision rule, schema, storage,
+  Git tracking, and legacy migration
 - `references/personal_memory_bridge.md`: shareable guidance for the optional
   external personal-memory workspace and promotion ladder
-- `references/scheduled_loops.md`: shareable guidance for incremental daily,
-  weekly, and monthly memory-maintenance automations
+- `references/live_maintenance_test.md`: real production collector and
+  inspectable repo-diff test protocol
+- `references/memory_quality.md`: current-state runbooks, typed lesson syntax,
+  quality issue types, and narrative-first rewriting
+- `references/scheduled_loops.md`: two-layer weekly/monthly automation,
+  controller boundaries, protected-info rules, and queue lifecycle

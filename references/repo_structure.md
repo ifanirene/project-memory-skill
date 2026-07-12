@@ -22,12 +22,18 @@ the artifact type.
 
 For analysis-heavy repos, organize outputs by maintained branch root:
 
-- `results/<branch-root>/`: the home of one maintained analysis direction
-- `results/<branch-root>/figures/`: active figures owned by that branch
-- `results/<branch-root>/runs/<variant>/`: child variants, parameter sweeps,
-  sensitivity reruns, or alternate windows
-- `results/<branch-root>/exports/` or `tables/`: branch-owned deliverables when
-  needed
+- `results/<theme>/<branch-root>/`: the home of one maintained analysis
+  direction when the repo groups work by theme
+- `results/<theme>/<branch-root>/runs/<variant>/`: child variants, parameter
+  sweeps, sensitivity reruns, or alternate windows when the repo groups work by
+  theme
+- `results/<branch-root>/`: the same branch-root idea when the repo does not
+  use theme buckets
+- for most runs, save outputs directly inside `<variant>/`; only add
+  artifact-type subfolders when the run is unusually large or mixes logically
+  separate deliverables
+- add `analysis_manifest.json` directly inside a provenance-sensitive variant
+  directory; presentation-only outputs may point to a source analytical variant
 
 One branch root should usually pair with:
 
@@ -47,7 +53,8 @@ Use questions like these before creating a new file:
 3. Is it an output owned by one analysis branch?
    Put it under that branch root in `results/`.
 4. Is it a child variation of an existing branch?
-   Put it under `results/<branch-root>/runs/<variant>/`.
+   Put it under `results/<theme>/<branch-root>/runs/<variant>/` when the repo
+   uses theme folders, otherwise `results/<branch-root>/runs/<variant>/`.
 5. Is it a durable cross-branch memory or operating rule?
    Put it under `docs/` or the repo guide.
 
@@ -60,8 +67,15 @@ rule before more files are added.
 - Keep one durable home for code, one for inputs, one for outputs, and one for
   durable docs. Avoid adding new top-level folders unless an existing home
   truly cannot fit the artifact type.
-- Organize outputs by branch root: `results/<branch-root>/` for the maintained
-  branch, with child variants under `results/<branch-root>/runs/<variant>/`.
+- Organize outputs by branch root: `results/<theme>/<branch-root>/` for the
+  maintained branch when the repo uses theme buckets, with child variants under
+  `results/<theme>/<branch-root>/runs/<variant>/`.
+- Use informative variant names that encode the provenance-changing choice, not
+  a generic suffix like `v2` or `rerun`.
+- For most runs, keep outputs flat inside the variant directory instead of
+  adding subfolders by artifact type.
+- Write `analysis_manifest.json` for analytical variants whose parameters,
+  code, inputs, or repeated execution need exact bookkeeping.
 - Co-locate active figures with the branch that owns them instead of saving
   them into a global dumping-ground folder.
 - New generated files should be placed by ownership first: code with code,
@@ -76,3 +90,5 @@ rule before more files are added.
 - top-level folders are created for one-off outputs
 - active figures are saved in a global curation folder
 - sibling variant directories each grow their own notes and mini-systems
+- sibling analytical variants rely on script defaults or note prose instead of
+  valid `analysis_manifest.json` records

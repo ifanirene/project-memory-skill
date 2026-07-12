@@ -2,200 +2,242 @@
 
 Use this reference when pairing project memory with automation.
 
-## Recommended loop model
+## Recommended model
 
-Prefer three non-overlapping loops:
+Use two maintenance layers instead of a daily crawler:
 
-1. daily signal-distillation loop
-2. weekly repo-maintenance loop
-3. monthly axiom-review loop
+1. weekly collection and repo maintenance
+2. monthly cross-repo reflection and axiom review
 
-Each loop should own one layer of maintenance:
+Keep one central collector workspace outside the monitored repos. Give the
+collector read-only access to registered repo-memory files and write access only
+to its own workspace. Do not duplicate the same cross-repo automation across
+each monitored repo.
 
-- daily: harvest and distill new repo or dialog signals into the external
-  workspace
-- weekly: update repo docs from the maintenance queue and repo-local
-  `NOTES.md -> docs/LESSONS.md` promotions
-- monthly: consolidate cross-repo reflections, axioms, and repo mirror
-  candidates without editing repos directly
+Use a hybrid controller such as `scripts/memoryctl.py`:
 
-## Daily signal-distillation loop
+1. deterministic collection creates a bounded source packet
+2. an LLM produces a structured semantic proposal
+3. deterministic validation checks provenance, paths, schema, and state
+4. deterministic application updates collector state atomically
 
-Responsibilities:
+The LLM should propose semantic conclusions. It should not directly mutate
+collector state or canonical repo files.
 
-- read only new or updated repo-memory signals since the last successful run
-- read only new or updated dialog signals since the last successful run
-- distill signals into session manifests, extracts, observations, and repo
-  maintenance queue entries
-- update daily run logs and cursor state
+## Weekly layer
 
-Good inputs:
+### Phase A: central collection
 
-- changed `AGENTS.md`
-- changed `ANALYSIS_INDEX.md`
-- changed `docs/LESSONS.md`
-- changed `docs/pipelines/*.md`
-- changed `NOTES.md`
-- session manifests and stable archived dialog logs
-
-Required guardrails:
-
-- do not copy raw dialogs
-- do not rewrite repo docs in the daily loop
-- do not update `REFLECTIONS.md`, `AXIOMS.md`, or repo mirrors
-- do not reprocess the full history by default
-- always update cursor state and write `logs/runs/YYYY-MM-DD_daily.md`
-- track a per-session processed-through event boundary in
-  `dialogs/session_manifest.jsonl`
-
-## Weekly repo-maintenance loop
+Run once from the collector workspace.
 
 Responsibilities:
 
-- consume `state/repo_maintenance_queue.json` plus unresolved gaps from prior
-  weekly logs
-- update repo-memory docs automatically when the queued review shows they
-  should change
-- restrict edits to documentation files only
-- preserve valid note archetypes instead of forcing every note into one
-  runbook template
-- complete `## Cross-document review` outcomes in touched notes
-- write `logs/runs/YYYY-MM-DD_weekly.md`
+- acquire a single-run lock
+- verify read access to every registered repo and write access to the collector
+- read only changed repo-memory files since the last successful cursor
+- reserve a small bounded share of each packet for unchanged legacy quality
+  reviews using `state/quality_audit_v1.json`; an empty state creates the
+  one-time backlog, and successful applies advance the round-robin audit cursor
+- record each monitored repo's Git HEAD, branch, and dirty state in the packet
+- prepare a bounded packet from `AGENTS.md`, `ANALYSIS_INDEX.md`,
+  `.gitignore`, `docs/LESSONS.md`, `docs/pipelines/*.md`, and maintained
+  `NOTES.md`
+- ask the LLM to classify and distill candidate signals
+- assess every collected `NOTES.md` and `docs/LESSONS.md` for current-state
+  findability, including changed sources that were not selected by the
+  round-robin audit
+- use `notes_chronology_drift`, `lesson_not_distilled`,
+  `stale_runbook_state`, and `oversized_memory_doc` for source-backed quality
+  findings; line count or dates alone are not enough to queue an issue
+- validate that every candidate has source IDs and recoverable provenance
+- append repo observations and create or deduplicate maintenance queue items
+- update cursors only after proposal validation and atomic state writes succeed
+- write a unique weekly collector log containing the run ID
 
-Allowed edit targets:
+Do not:
+
+- edit monitored repos
+- read raw data or generated outputs
+- copy full dialogs
+- update reflections, axioms, or repo mirrors
+- advance cursors after a partial or failed apply
+
+Use `memoryctl` as follows:
+
+```bash
+python scripts/memoryctl.py doctor --workspace /path/to/long-term-memory
+python scripts/memoryctl.py collect \
+  --workspace /path/to/long-term-memory \
+  --output /path/to/long-term-memory/runs/<run-id>/packet.json \
+  --quality-audit-files 2
+# LLM writes proposal.json from packet.json.
+python scripts/memoryctl.py validate \
+  --workspace /path/to/long-term-memory \
+  --packet /path/to/long-term-memory/runs/<run-id>/packet.json \
+  --proposal /path/to/long-term-memory/runs/<run-id>/proposal.json
+python scripts/memoryctl.py apply \
+  --workspace /path/to/long-term-memory \
+  --packet /path/to/long-term-memory/runs/<run-id>/packet.json \
+  --proposal /path/to/long-term-memory/runs/<run-id>/proposal.json
+```
+
+### Phase B: repo-local maintenance
+
+Run at most once per monitored repo after central collection. Each run may read
+only its own queue items and its own repo. It must not inspect sibling repos or
+write collector promotion files.
+
+Responsibilities:
+
+- claim open queue items assigned to the repo
+- run `bootstrap_repo_memory.py --mode monitored --audit-only` to detect global
+  contract and manifest drift before branch cleanup
+- run `validate_analysis_manifest.py --repo <repo>` when manifests exist
+- review only the source-linked repo docs needed for those items
+- propose or apply allowed documentation changes
+- process at most one or two large-note quality cleanups per run
+- before rewriting chronology, derive a rewrite brief containing purpose,
+  current claim, canonical artifacts, trust basis, kill list, and missing
+  evidence
+- rewrite the note as question -> current answer -> evidence -> selected
+  analytical variant -> limitations -> next decision; retain only a compact
+  provenance appendix when sequence itself changes interpretation
+- rewrite new or migrated lessons with literal `Default:`, `Check:`, `Trap:`,
+  or `Preference:` prefixes plus a trigger, action, and reason
+- choose the note shape that best serves the current purpose; existing
+  chronology and legacy shape are not preservation requirements
+- identify active provenance-sensitive variants missing a native manifest;
+  never fabricate execution facts, and defer native creation to the next real
+  pipeline run when exact legacy facts are unavailable
+- remove commands, complete parameter maps, input inventories, and artifact
+  inventories from notes only after a valid manifest owns those facts
+- complete `## Cross-document review` in touched notes
+- resolve, defer, or reject every claimed queue item with evidence
+- write a unique repo-maintenance log
+
+Allowed targets:
 
 - `AGENTS.md`
 - `ANALYSIS_INDEX.md`
 - `docs/LESSONS.md`
 - `docs/pipelines/*.md`
-- `NOTES.md`
+- maintained `NOTES.md`
+- `.gitignore`, but only for narrow rules that keep `NOTES.md` and
+  `analysis_manifest.json` trackable under ignored output roots
 
-Do not edit:
+Do not edit code, data, generated outputs, manifests, or raw dialog archives.
+Maintenance may validate manifests and queue pipeline changes, but a pipeline
+must write its own native manifest after a real execution.
 
-- code
-- data
-- generated outputs
-- raw dialog archives
+## Protected `AGENTS.md` information
 
-Validation phase:
+`AGENTS.md` may evolve, but changes to the following require explicit user
+permission:
 
-- start with a bounded validation scope controlled by `state/weekly_rollout.json`
-- limit automatic edits to representative fixture notes plus the directly
-  corresponding `ANALYSIS_INDEX.md` or `docs/LESSONS.md` updates
-- defer non-scope items back into the queue and record them in the weekly log
-- switch from `validation` to `full` only after the validation checks pass
+- environment names, paths, versions, activation commands, and interpreters
+- security and secret-handling rules
+- execution requirements, mandatory commands, and validation gates
+- deployment, remote-access, or infrastructure instructions
+- user-authored prohibitions or approval requirements
 
-## Monthly axiom-review loop
+An unattended run cannot supply that permission. It must defer the queue item
+and record the exact proposed change. Permission may come from the current user
+request or a previously recorded approval tied to the exact change. General
+permission to "clean up" or "update" `AGENTS.md` is not sufficient.
+
+Before editing `AGENTS.md`:
+
+1. extract the protected facts before and after the proposed change
+2. fail if a protected fact is removed, weakened, or materially rewritten
+   without explicit permission
+3. preserve unrelated sections byte-for-byte when practical
+4. record the permission source in the run log
+
+## Queue lifecycle
+
+Use explicit queue states:
+
+- `open`: available for a repo-local run
+- `claimed`: owned by one run ID
+- `resolved`: applied or confirmed unnecessary, with evidence
+- `deferred`: blocked by scope, permissions, missing context, or an overlapping
+  edit that cannot be reconciled safely
+- `rejected`: invalid or obsolete, with evidence
+
+Each item should include:
+
+- idempotency key
+- repo and branch root
+- issue type and suggested target
+- source IDs and source hashes
+- status, attempt count, and owning run ID
+- resolution evidence or deferral reason
+- protected-information impact, if `AGENTS.md` is involved
+- quality evidence for memory-quality issue types
+- a narrative rewrite brief for a `NOTES.md` quality cleanup
+
+The weekly layer owns queue lifecycle. Do not leave resolved items permanently
+open for a future collector to rediscover.
+
+## Monthly layer
+
+Run once from the collector workspace. A native monthly schedule is preferred;
+otherwise use a weekly schedule with a 28-day gate.
 
 Responsibilities:
 
-- run on a weekly schedule but execute the full monthly cycle only when 28 or
-  more days have elapsed since `state/monthly_cycle.json.last_successful_cycle`
-- read new observations, weekly logs, repo lessons, and dialog extracts since
-  the last successful monthly cycle
-- promote `OBSERVATIONS.md -> REFLECTIONS.md -> AXIOMS.md` only when the
-  recurrence and stability thresholds are met
-- update repo-facing mirror candidates for later weekly consumption
-- write `logs/runs/YYYY-MM-DD_monthly.md`
+- collect only new dialog signals since the last successful monthly cycle
+- read new repo observations and weekly decision logs
+- distinguish scientific/user memory from automation operations
+- promote observations to reflections after 2 independent recurrences
+- promote reflections to axioms after 3 confirmations plus 28-day stability or
+  explicit user endorsement
+- update repo-facing mirror proposals for later repo-local maintenance
+- write a unique monthly log and update monthly state atomically
 
-Required guardrails:
+Use these signal scopes:
 
-- do not edit repos directly
-- do not copy raw dialogs
-- do not rerun full-history promotion passes by default
-- preserve provenance for every promoted reflection or axiom
+- `repo_local`: belongs in one repo's notes or lessons
+- `cross_repo_science`: scientific or technical principle useful across repos
+- `user_preference`: stable user preference or decision rule
+- `automation_operations`: collector or maintenance behavior
 
-## Incremental processing
+Do not promote `automation_operations` into personal axioms unless the user
+explicitly wants an operational rule treated as personal memory. Keep those
+signals in an operations log or controller documentation.
 
-Use cursor files in the external workspace.
+The monthly layer must not edit monitored repos directly.
 
-### Dialog cursor
+## Bootstrap and rollout
 
-Track:
+Bootstrap only once and keep it bounded:
 
-- last successful run
-- last processed session updated-at value
-- whether bootstrap is complete
+- process recent maintained notes first
+- cap files and dialog sessions per run
+- establish cursors before widening coverage
+- leave bootstrap incomplete while backlog remains
 
-Use the stable dialog archive as the source of truth. Use a lightweight session
-index only to discover new or updated sessions.
+Start repo-local auto-edits in validation mode. Require consecutive successful
+runs with no protected-information regression, no duplicate run, and no stale
+queue recurrence before widening coverage.
 
-Use `dialogs/session_manifest.jsonl` to store session-level progress such as the
-processed-through event boundary, last distilled timestamp, and distilled event
-count so updated sessions can be resumed without redistilling covered content.
+Do not wait for files to change before reviewing legacy quality. Finish the
+initial `quality_audit_v1` backlog incrementally, then use the same state to
+avoid re-auditing unchanged files that were already reviewed. A content change
+makes the file eligible again through the normal changed-file cursor.
 
-### Repo cursors
+## Logs and worktrees
 
-Track per repo:
+Name every run log with a timestamp and run ID so concurrent attempts cannot
+overwrite one another.
 
-- last processed commit and/or mtime
-- known unresolved gaps from earlier runs
-- whether bootstrap is complete
+Do not require a clean main worktree. Weekly repo-local maintenance should run
+against the current main checkout even when it contains uncommitted work. Record
+the starting Git status and read the target's current content before rewriting
+it. `NOTES.md`, `docs/LESSONS.md`, the index, and pipeline docs may be
+substantially rewritten to serve their current purpose; do not preserve log
+structure merely because it is present. Never reset, discard, commit, or alter
+unrelated files. Protected `AGENTS.md` information remains permission-gated.
 
-Process only changed files plus unresolved gaps recorded in earlier logs.
-
-### Maintenance queue
-
-Use `state/repo_maintenance_queue.json` as the handoff between the daily and
-weekly loops.
-
-Each queue item should carry enough context to prevent weekly rescans:
-
-- repo
-- branch root
-- note archetype
-- issue type
-- suggested target file
-- confidence
-- provisional flag
-- source pointers
-
-The daily loop appends or deduplicates queue items. The weekly loop consumes,
-defers, or resolves them.
-
-## First-run bootstrap
-
-The first successful daily run is the only time the system should backfill
-broadly.
-
-Even then:
-
-- process incrementally
-- favor the most relevant or recent material first
-- distill instead of copying
-- establish the cursors and manifest so later runs can stay small
-- cap the first pass so it finishes and writes progress instead of trying to
-  absorb the full archive at once
-
-The first weekly repo-maintenance run should start in bounded validation mode:
-
-- validate a child-variant family
-- validate a chronology or legacy note
-- validate a synthesis note
-- confirm that note archetypes are preserved before widening to full coverage
-
-## Logs
-
-Every automated run should write a human-readable decision log that includes:
-
-- what was processed
-- what changed
-- what did not change
-- why each change or non-change decision was made
-- unresolved gaps
-- any provisional signals held back from promotion
-
-Logs are the main guardrail when updates are automated instead of manual-review
-gated.
-
-Use separate log files per loop so same-day runs do not overwrite each other.
-
-## Worktrees
-
-Treat the main repo worktree as canonical for automated repo updates.
-
-Extra worktrees may be read for signal collection, but:
-
-- their signals should be marked provisional
-- they should not trigger direct repo doc edits until merged or independently
-  repeated
+Treat detached HEADs and extra worktrees as provisional. Do not edit them until
+the work is on the canonical main checkout or independently confirmed.
