@@ -120,6 +120,11 @@ Write the manifest only after the run succeeds and validation is known. Write
 atomically so a partial run cannot look complete. Validate it with
 `scripts/validate_analysis_manifest.py`.
 
+`--repo <root>` discovers manifests under both `results/` and `output/`.
+Pass explicit manifest paths for other maintained roots. This validator checks
+schema only: `VALID` does not establish file existence, matching hashes,
+recoverable historical code, environment identity, or successful reproduction.
+
 ## Relationship to `NOTES.md`
 
 Do not duplicate the command, complete parameter map, input inventory, or
@@ -142,4 +147,3 @@ scientifically important branches that meet the decision rule.
 - Do not invent resolved defaults, hashes, timestamps, or validation.
 - Until a missing manifest can be recovered, do not delete the only remaining
   reproducibility facts from a legacy note.
-

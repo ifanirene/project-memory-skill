@@ -42,6 +42,21 @@ One branch root should usually pair with:
 
 Do not create a new root for every minor rerun.
 
+## Repair unclear analysis ownership
+
+When contributors cannot connect code and outputs to an analysis, extend the
+existing index with question, current result, branch note, and code entry points.
+For a large shared code directory, a README can provide reverse lookup by branch;
+keep the analysis index authoritative for status and relationships.
+
+Distinguish data dependencies from shared datasets or methods. Verify relationships
+from notes, manifests or code references; label unresolved ownership explicitly.
+Inventory legacy output roots without treating each as a maintained branch. Check
+that current links exist and mark deleted paths as historical. Preserve established
+locations until a move has a concrete benefit and its callers and consumers have
+been checked. At completion, verify links and inventory coverage; do not equate
+navigation repair with recovered execution provenance or scientific validation.
+
 ## Placement rules
 
 Use questions like these before creating a new file:

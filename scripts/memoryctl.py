@@ -133,12 +133,19 @@ def load_registry(workspace: Path) -> dict[str, Any]:
             raise MemoryCtlError(f"Invalid or duplicate repo name: {name!r}")
         if not isinstance(root, str) or not Path(root).is_absolute():
             raise MemoryCtlError(f"Repo {name} must use an absolute root path")
+        if not isinstance(repo.get("maintenance_enabled", True), bool):
+            raise MemoryCtlError(f"Repo {name} maintenance_enabled must be boolean")
         patterns = repo.get("patterns", DEFAULT_PATTERNS)
         if not isinstance(patterns, list) or not all(isinstance(p, str) for p in patterns):
             raise MemoryCtlError(f"Repo {name} patterns must be a list of strings")
         for pattern in patterns:
             ensure_relative_path(pattern, label=f"Pattern for repo {name}")
         names.add(name)
+    # Additional registered projects can feed personal decision memory without
+    # silently creating documentation jobs for repos that have no local worker.
+    registry = {**registry, "repos": [
+        repo for repo in repos if repo.get("maintenance_enabled", True)
+    ]}
     return registry
 
 
@@ -570,6 +577,7 @@ def validate_proposal(
 
     registry = load_registry(workspace)
     repo_names = {repo["name"] for repo in registry["repos"]}
+    _, queue = load_queue(workspace)
     for item in proposal.get("maintenance_items", []):
         if not isinstance(item, dict) or item.get("repo") not in repo_names:
             raise MemoryCtlError("Maintenance item cites an unknown repo")
@@ -583,6 +591,21 @@ def validate_proposal(
             raise MemoryCtlError("Maintenance item needs issue_type")
         if not isinstance(item.get("rationale"), str):
             raise MemoryCtlError("Maintenance item needs rationale")
+        override = item.get("requeue_closed_item")
+        override_evidence = item.get("requeue_evidence")
+        if "requeue_closed_item" in item or "requeue_evidence" in item:
+            if not all(isinstance(value, str) and value.strip()
+                       for value in (override, override_evidence)):
+                raise MemoryCtlError(
+                    "Requeue override needs both requeue_closed_item and non-empty "
+                    "requeue_evidence describing material new facts"
+                )
+            previous = find_queue_item(queue, override)
+            if (previous.get("status") != "rejected"
+                    or previous.get("disposition") != "user_waived_historical"):
+                raise MemoryCtlError("Requeue override must reference a dismissed historical item")
+            if queue_issue_identity(workspace, previous) != queue_issue_identity(workspace, item):
+                raise MemoryCtlError("Requeue override repo/target/issue does not match")
         protected = item.get("protected_information")
         if not isinstance(protected, dict) or protected.get("impact") not in {
             "none",
@@ -653,6 +676,16 @@ def find_queue_item(queue: dict[str, Any], key: str) -> dict[str, Any]:
     return matches[0]
 
 
+def queue_issue_identity(workspace: Path, item: dict[str, Any]) -> dict[str, str]:
+    """Stable debt identity, deliberately independent of source content hashes."""
+    validate_target(item["suggested_target"])
+    return {
+        "repo": canonical_queue_repo(workspace, item["repo"]),
+        "suggested_target": Path(item["suggested_target"]).as_posix(),
+        "issue_type": item["issue_type"].strip(),
+    }
+
+
 def command_apply(args: argparse.Namespace) -> int:
     workspace = ensure_workspace(args.workspace)
     packet = read_json(args.packet.expanduser().resolve())
@@ -707,7 +740,21 @@ def command_apply(args: argparse.Namespace) -> int:
 
         queue_path, queue = load_queue(workspace)
         existing_keys = {item.get("idempotency_key") for item in queue["items"]}
+        dismissed = [item for item in queue["items"]
+                     if item.get("status") == "rejected"
+                     and item.get("disposition") == "user_waived_historical"]
+        suppressed_items = []
         for item in proposal.get("maintenance_items", []):
+            identity = queue_issue_identity(workspace, item)
+            matching_waivers = [closed for closed in dismissed
+                               if queue_issue_identity(workspace, closed) == identity]
+            if matching_waivers and not item.get("requeue_closed_item"):
+                suppressed_items.append({
+                    **identity,
+                    "dismissed_item_ids": [closed["idempotency_key"]
+                                           for closed in matching_waivers],
+                })
+                continue
             key_payload = {
                 "repo": item["repo"],
                 "issue_type": item["issue_type"],
@@ -720,6 +767,9 @@ def command_apply(args: argparse.Namespace) -> int:
                     for source_id in item["source_ids"]
                 ),
             }
+            if item.get("requeue_closed_item"):
+                key_payload["requeue_closed_item"] = item["requeue_closed_item"]
+                key_payload["requeue_evidence"] = item["requeue_evidence"]
             key = sha256_bytes(canonical_json_bytes(key_payload))[:24]
             if key in existing_keys:
                 continue
@@ -779,6 +829,7 @@ def command_apply(args: argparse.Namespace) -> int:
             f"- Processed sources: {len(packet['sources'])}",
             f"- Observation candidates: {len(observation_records)}",
             f"- Maintenance proposals: {len(proposal.get('maintenance_items', []))}",
+            f"- User-waived historical proposals suppressed: {len(suppressed_items)}",
             f"- Remaining changed files: {packet.get('remaining_changed_files', 0)}",
             "- Quality-audit sources: "
             f"{packet.get('quality_audit_source_count', 0)}",
@@ -787,6 +838,8 @@ def command_apply(args: argparse.Namespace) -> int:
             "- Canonical repo files edited: none",
             "",
         ]
+        for suppressed in suppressed_items:
+            log_lines.append("- Suppressed historical debt: " + json.dumps(suppressed, sort_keys=True))
         log_path = workspace / "logs" / "runs" / f"{run_id}_weekly-collector.md"
         atomic_write_text(log_path, "\n".join(log_lines))
 
@@ -807,12 +860,30 @@ def command_apply(args: argparse.Namespace) -> int:
     return 0
 
 
+def canonical_queue_repo(workspace: Path, value: str) -> str:
+    """Accept a maintained repo name or its exact root; reject silent misses."""
+    repos = load_registry(workspace)["repos"]
+    for repo in repos:
+        if value == repo["name"]:
+            return repo["name"]
+    path = Path(value).expanduser()
+    matches = [repo["name"] for repo in repos
+               if path.is_absolute() and path.resolve() == Path(repo["root"]).resolve()]
+    if len(matches) == 1:
+        return matches[0]
+    raise MemoryCtlError(
+        f"Unknown or ambiguous maintenance repo: {value!r}; use a registered "
+        "maintenance-enabled name or its exact root"
+    )
+
+
 def command_queue_list(args: argparse.Namespace) -> int:
     workspace = ensure_workspace(args.workspace)
     _, queue = load_queue(workspace)
     items = queue["items"]
     if args.repo:
-        items = [item for item in items if item.get("repo") == args.repo]
+        repo = canonical_queue_repo(workspace, args.repo)
+        items = [item for item in items if item.get("repo") == repo]
     if args.status:
         items = [item for item in items if item.get("status") == args.status]
     print(json.dumps(items, indent=2, sort_keys=True))
@@ -821,10 +892,11 @@ def command_queue_list(args: argparse.Namespace) -> int:
 
 def command_queue_claim(args: argparse.Namespace) -> int:
     workspace = ensure_workspace(args.workspace)
+    repo = canonical_queue_repo(workspace, args.repo)
     with workspace_lock(workspace):
         queue_path, queue = load_queue(workspace)
         item = find_queue_item(queue, args.idempotency_key)
-        if item.get("repo") != args.repo:
+        if item.get("repo") != repo:
             raise MemoryCtlError(
                 f"Queue item belongs to {item.get('repo')}, not {args.repo}"
             )
@@ -846,10 +918,11 @@ def command_queue_claim(args: argparse.Namespace) -> int:
 
 def command_queue_finish(args: argparse.Namespace) -> int:
     workspace = ensure_workspace(args.workspace)
+    repo = canonical_queue_repo(workspace, args.repo)
     with workspace_lock(workspace):
         queue_path, queue = load_queue(workspace)
         item = find_queue_item(queue, args.idempotency_key)
-        if item.get("repo") != args.repo:
+        if item.get("repo") != repo:
             raise MemoryCtlError(
                 f"Queue item belongs to {item.get('repo')}, not {args.repo}"
             )
@@ -876,6 +949,83 @@ def command_queue_finish(args: argparse.Namespace) -> int:
         item["lease_expires_at"] = None
         atomic_write_json(queue_path, queue)
     print(f"Marked {args.idempotency_key} as {args.status}")
+    return 0
+
+
+def command_queue_reopen(args: argparse.Namespace) -> int:
+    """Revisit a deferred dependency without discarding its previous outcome."""
+    workspace = ensure_workspace(args.workspace)
+    repo = canonical_queue_repo(workspace, args.repo)
+    if not args.evidence.strip() or not args.run_id.strip():
+        raise MemoryCtlError("Reopening requires non-empty evidence and run ID")
+    with workspace_lock(workspace):
+        queue_path, queue = load_queue(workspace)
+        item = find_queue_item(queue, args.idempotency_key)
+        if item.get("repo") != repo:
+            raise MemoryCtlError(
+                f"Queue item belongs to {item.get('repo')}, not {args.repo}"
+            )
+        if item.get("status") != "deferred":
+            raise MemoryCtlError(
+                f"Queue item is {item.get('status')}, not deferred: {args.idempotency_key}"
+            )
+        history = item.setdefault("status_history", [])
+        if not isinstance(history, list):
+            raise MemoryCtlError("Invalid queue status_history")
+        timestamp = utc_now().isoformat()
+        history.append({
+            "from_status": "deferred", "to_status": "open",
+            "run_id": args.run_id, "at": timestamp, "evidence": args.evidence,
+            "previous": {key: item.get(key) for key in (
+                "status", "resolution_evidence", "owning_run_id", "claimed_at",
+                "finished_at", "lease_expires_at", "permission_source", "attempts",
+            )},
+        })
+        item["status"] = "open"
+        item["reopened_at"] = timestamp
+        item["reopened_by_run_id"] = args.run_id
+        for key in ("resolution_evidence", "owning_run_id", "claimed_at",
+                    "finished_at", "lease_expires_at", "permission_source"):
+            item[key] = None
+        atomic_write_json(queue_path, queue)
+    print(f"Reopened {args.idempotency_key}; prior deferral retained")
+    return 0
+
+
+def command_queue_dismiss(args: argparse.Namespace) -> int:
+    """Close explicitly waived historical debt without claiming it was repaired."""
+    for label, value in (("repo", args.repo), ("key", args.idempotency_key),
+                         ("run ID", args.run_id), ("evidence", args.evidence)):
+        if not isinstance(value, str) or not value.strip():
+            raise MemoryCtlError(f"Dismissing requires non-empty {label}")
+    workspace = ensure_workspace(args.workspace)
+    repo = canonical_queue_repo(workspace, args.repo)
+    with workspace_lock(workspace):
+        queue_path, queue = load_queue(workspace)
+        item = find_queue_item(queue, args.idempotency_key)
+        if item.get("repo") != repo:
+            raise MemoryCtlError(f"Queue item belongs to {item.get('repo')}, not {repo}")
+        if item.get("status") not in {"open", "deferred"}:
+            raise MemoryCtlError("Only open or deferred historical items can be dismissed")
+        history = item.setdefault("status_history", [])
+        if not isinstance(history, list):
+            raise MemoryCtlError("Invalid queue status_history")
+        identity = queue_issue_identity(workspace, item)
+        timestamp = utc_now().isoformat()
+        # JSON round-trip retains all previous fields without sharing mutable values.
+        previous = json.loads(json.dumps({k: v for k, v in item.items()
+                                          if k != "status_history"}))
+        history.append({
+            "from_status": item["status"], "to_status": "rejected",
+            "run_id": args.run_id, "at": timestamp, "evidence": args.evidence,
+            "disposition": "user_waived_historical", "previous": previous,
+        })
+        item.update(status="rejected", disposition="user_waived_historical",
+                    suppression_identity=identity, resolution_evidence=args.evidence,
+                    dismissed_by_run_id=args.run_id, finished_at=timestamp,
+                    owning_run_id=None, lease_expires_at=None)
+        atomic_write_json(queue_path, queue)
+    print(f"Dismissed {args.idempotency_key}; historical debt waived, not repaired")
     return 0
 
 
@@ -941,6 +1091,26 @@ def build_parser() -> argparse.ArgumentParser:
     queue_finish.add_argument("--evidence", required=True)
     queue_finish.add_argument("--permission-source")
     queue_finish.set_defaults(func=command_queue_finish)
+
+    queue_reopen = subparsers.add_parser(
+        "queue-reopen", help="Reopen a deferred item after its dependency changes"
+    )
+    queue_reopen.add_argument("--workspace", type=Path, required=True)
+    queue_reopen.add_argument("--idempotency-key", required=True)
+    queue_reopen.add_argument("--repo", required=True)
+    queue_reopen.add_argument("--run-id", required=True)
+    queue_reopen.add_argument("--evidence", required=True)
+    queue_reopen.set_defaults(func=command_queue_reopen)
+
+    queue_dismiss = subparsers.add_parser(
+        "queue-dismiss", help="Reject explicitly user-waived historical debt"
+    )
+    queue_dismiss.add_argument("--workspace", type=Path, required=True)
+    queue_dismiss.add_argument("--key", "--idempotency-key", dest="idempotency_key", required=True)
+    queue_dismiss.add_argument("--repo", required=True)
+    queue_dismiss.add_argument("--run-id", required=True)
+    queue_dismiss.add_argument("--evidence", required=True)
+    queue_dismiss.set_defaults(func=command_queue_dismiss)
     return parser
 
 

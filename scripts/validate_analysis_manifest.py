@@ -10,6 +10,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from verify_manifest_files import verify_files
+
 
 TOP_LEVEL_FIELDS = {
     "schema_version",
@@ -127,17 +129,23 @@ def validate_manifest(value: Any) -> list[str]:
 
 
 def discover(repo: Path) -> list[Path]:
-    results = repo / "results"
-    if not results.exists():
-        return []
-    return sorted(results.glob("**/analysis_manifest.json"))
+    return sorted({path for name in ("results", "output")
+                   for path in (repo / name).glob("**/analysis_manifest.json")})
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("paths", nargs="*", type=Path)
-    parser.add_argument("--repo", type=Path, help="Validate every manifest under repo/results.")
+    parser.add_argument("--repo", type=Path,
+                        help="Validate manifests under repo/results and repo/output; "
+                             "pass explicit paths for other roots.")
+    parser.add_argument("--verify-files", action="store_true",
+                        help="Also check declared files and bounded hashes; does not rerun analyses.")
+    parser.add_argument("--hash-max-bytes", type=int, default=50_000_000,
+                        help="Maximum file size to hash in --verify-files mode (default 50 MB).")
     args = parser.parse_args()
+    if args.hash_max_bytes < 0:
+        parser.error("--hash-max-bytes must be nonnegative")
 
     paths = [path.expanduser().resolve() for path in args.paths]
     if args.repo:
@@ -162,9 +170,14 @@ def main() -> int:
                 print(f"- {error}")
         else:
             print(f"VALID {path}")
+            if args.verify_files:
+                report = verify_files(value, args.hash_max_bytes)
+                report["manifest"] = str(path)
+                print("FILE_CHECK " + json.dumps(report, ensure_ascii=False))
+                if report["failures"]:
+                    failed += 1
     return 1 if failed else 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

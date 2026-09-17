@@ -61,3 +61,31 @@ def test_missing_execution_provenance_fails(tmp_path: Path) -> None:
     )
     assert result.returncode == 1
     assert "script_sha256" in result.stdout
+
+
+def test_repo_discovers_both_output_roots_and_keeps_explicit_paths(tmp_path: Path) -> None:
+    paths = [tmp_path / name / "branch" / "analysis_manifest.json"
+             for name in ("results", "output", "legacy")]
+    for path in paths:
+        path.parent.mkdir(parents=True)
+        path.write_text(json.dumps(valid_manifest()))
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--repo", str(tmp_path), str(paths[2]), str(paths[0])],
+        text=True, capture_output=True, check=False,
+    )
+    assert result.returncode == 0
+    assert len(result.stdout.strip().splitlines()) == 3
+    for path in paths:
+        assert result.stdout.count(str(path)) == 1
+
+
+def test_output_only_repository_cannot_hide_invalid_manifest(tmp_path: Path) -> None:
+    path = tmp_path / "output" / "branch" / "analysis_manifest.json"
+    path.parent.mkdir(parents=True)
+    path.write_text("{}")
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--repo", str(tmp_path)],
+        text=True, capture_output=True, check=False,
+    )
+    assert result.returncode == 1
+    assert f"INVALID {path}" in result.stdout

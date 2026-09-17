@@ -4,10 +4,17 @@ Use this reference when pairing project memory with automation.
 
 ## Recommended model
 
-Use two maintenance layers instead of a daily crawler:
+Separate learning from document upkeep:
 
-1. weekly collection and repo maintenance
-2. monthly cross-repo reflection and axiom review
+1. daily personal L1 Observer using completed dialog turns and decision notes
+2. weekly L2 reflection and a monthly L3 eligibility review
+3. weekly repo-documentation collection/maintenance through the existing queue
+
+Read [decision_memory.md](decision_memory.md) for the personal loop contract.
+Monthly gating applies only to L3, never to observation intake, backlog processing,
+or weekly reflection. Read automation configuration AND run artifacts before
+claiming a schedule is active or that a run succeeded. Preserve a paused task
+unless the user asks to resume it.
 
 Keep one central collector workspace outside the monitored repos. Give the
 collector read-only access to registered repo-memory files and write access only
@@ -51,6 +58,11 @@ Responsibilities:
   findings; line count or dates alone are not enough to queue an issue
 - validate that every candidate has source IDs and recoverable provenance
 - append repo observations and create or deduplicate maintenance queue items
+- before proposing a missing-manifest item, inspect existing deferred items for
+  the same repo, target, and issue type. If the analytical variant and unmet
+  next-rerun dependency are unchanged, cite that item in the run log instead of
+  requeuing it merely because note wording or its source hash changed. A distinct
+  variant or materially changed dependency needs its own source-backed assessment.
 - update cursors only after proposal validation and atomic state writes succeed
 - write a unique weekly collector log containing the run ID
 
@@ -90,13 +102,24 @@ write collector promotion files.
 Responsibilities:
 
 - claim open queue items assigned to the repo
+- use the registered short name for queue commands, for example
+  `queue-list --workspace <collector> --repo cross-species-analysis --status open`.
+  Exact registered roots are accepted and normalized; unknown or unmaintained
+  repos must fail instead of silently returning an empty queue.
 - run `bootstrap_repo_memory.py --mode monitored --audit-only` to detect global
   contract and manifest drift before branch cleanup
 - run `validate_analysis_manifest.py --repo <repo>` when manifests exist
+- For a current result under review, use `validate_analysis_manifest.py
+  <specific-manifest> --verify-files` to check declared files with bounded hashing.
+  Report schema, file identity, reconstructability and scientific validation
+  separately. A passing schema does not authorize deleting legacy facts.
+- Check existing deferred items before proposing a missing-manifest migration.
+  If repo, target, issue and unresolved prerequisite are the same, reference the
+  existing item instead of requeuing it after a note hash changes.
 - review only the source-linked repo docs needed for those items
 - propose or apply allowed documentation changes
 - process at most one or two large-note quality cleanups per run
-- before rewriting chronology, derive a rewrite brief containing purpose,
+- before rewriting chronology, preserve attributed decision evidence and derive a rewrite brief containing purpose,
   current claim, canonical artifacts, trust basis, kill list, and missing
   evidence
 - rewrite the note as question -> current answer -> evidence -> selected
@@ -179,34 +202,55 @@ Each item should include:
 The weekly layer owns queue lifecycle. Do not leave resolved items permanently
 open for a future collector to rediscover.
 
-## Monthly layer
+Deferred work is revisited only when its recorded dependency materially changes,
+such as a real analysis rerun producing the required native manifest. Use
+`queue-reopen --workspace <collector> --repo <registered-name> --idempotency-key
+<key> --run-id <unique-review-id> --evidence "<changed dependency and evidence>"`,
+then claim and assess it normally. Reopening preserves the previous status,
+resolution, and owner in `status_history`; it neither proves resolution nor grants
+permission to change protected guidance. Do not reopen because time passed or a
+note hash changed. Expired claimed items still need explicit owner-aware recovery;
+there is no automatic lease reclamation.
 
-Run once from the collector workspace. A native monthly schedule is preferred;
-otherwise use a weekly schedule with a 28-day gate.
+When the user explicitly waives unimportant or unrecoverable historical debt, use
+`queue-dismiss --workspace <collector> --repo <registered-name> --key <key>
+--run-id <review-id> --evidence "<user authorization and reason>"`.
+Only open/deferred items can move to rejected with disposition
+`user_waived_historical`; their complete previous fields remain in status_history.
+This closes debt without claiming a repair or authorizing protected edits.
+Phase A suppresses later proposals for the same canonical repo/target/issue even
+when source hashes change, and records suppression in its run log. Material new
+facts can justify a new linked item only when a proposal supplies both
+`requeue_closed_item` (the dismissed idempotency key) and `requeue_evidence` (the
+specific new facts). The controller checks the pair and matching issue identity;
+the reviewer must assess whether those facts genuinely change the decision.
+Passing time, changing note hashes, or repeating an old rationale is insufficient.
 
-Responsibilities:
+## Personal learning loops
 
-- collect only new dialog signals since the last successful monthly cycle
-- read new repo observations and weekly decision logs
-- distinguish scientific/user memory from automation operations
-- promote observations to reflections after 2 independent recurrences
-- promote reflections to axioms after 3 confirmations plus 28-day stability or
-  explicit user endorsement
-- update repo-facing mirror proposals for later repo-local maintenance
-- write a unique monthly log and update monthly state atomically
+The personal Observer and Reflector use `decision_memory.py`; the Phase A/B
+sections above remain documentation operations. Their output counts are not
+personal-memory yield. Do not send maintenance automation logs through the
+human-confirmation promotion ladder.
 
-Use these signal scopes:
+Observer: collect one bounded packet, read every selected source in context,
+propose attributed decision events or concrete no-signal/deferred reasons,
+validate and apply. Keep active-session completed tails eligible. Report
+coverage gaps, backlog and the oldest unreviewed period; do not call a partial
+bootstrap complete. A remote failure must not silently become "no new signals".
 
-- `repo_local`: belongs in one repo's notes or lessons
-- `cross_repo_science`: scientific or technical principle useful across repos
-- `user_preference`: stable user preference or decision rule
-- `automation_operations`: collector or maintenance behavior
+Reflector: compare new events weekly and re-evaluate existing candidates for
+counterexamples and changed scope. Keep first occurrences as candidates. Two
+independent human episodes can support a reflection even within one repo. Three
+human episodes spanning 28 days support automatic axiom eligibility, subject to
+semantic review. Actual confirmation dates establish stability; repeated agent
+compliance and no-change logs do not.
 
-Do not promote `automation_operations` into personal axioms unless the user
-explicitly wants an operational rule treated as personal memory. Keep those
-signals in an operations log or controller documentation.
-
-The monthly layer must not edit monitored repos directly.
+Run axiom eligibility monthly without skipping reflection in other weeks. New
+principles must predict a concrete future decision and state boundaries and costs.
+Keep scientific findings, personal choices, and automation operations distinct.
+Prepare relevant mirrors for repo-local review; never edit monitored repos from
+the personal collector. See `personal_memory_bridge.md` for retrieval and mirrors.
 
 ## Bootstrap and rollout
 

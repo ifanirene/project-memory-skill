@@ -12,8 +12,10 @@ Draft or rewrite a note using the narrative logic from `paper-narrative`:
    trust basis, and missing evidence.
 2. Choose the shortest useful arc: question -> current answer -> evidence ->
    selected analytical variant -> limitations -> next decision.
-3. Build a kill list. Delete dated updates, superseded commands, cosmetic
+3. Build a kill list. Delete redundant updates, superseded commands, cosmetic
    iterations, repeated summaries, and details that do not support the arc.
+   Preserve user-attributed choices, rejected alternatives, reasons, accepted
+   costs, changes of mind and their source boundaries in a compact decision record.
 4. Rewrite the note as one coherent current document; do not append another
    session section.
 
@@ -26,8 +28,10 @@ A future contributor should find these quickly:
 - why the result is trustworthy and where it is limited
 - what decision or evidence comes next
 
-Chronology is not a protected note shape. Keep a compact provenance appendix
-only when sequence itself explains the current result; otherwise delete it.
+Chronology is not a protected note shape. Keep a compact decision/provenance
+record when sequence explains the current result or the investigator's evolving
+judgment. Do not delete the only evidence of a choice before its attributed
+distillation is stored and linked; an agent-written summary is not user endorsement.
 When a valid manifest exists, remove duplicated commands, parameters, input
 inventories, and artifact inventories from the note. In a legacy branch with a
 required manifest missing, do not delete the only recoverable execution facts;

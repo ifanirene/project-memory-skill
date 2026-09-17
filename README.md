@@ -60,13 +60,18 @@ memory outside the repo.
 
 ## Automation Model
 
-The skill is designed to work with two maintenance layers:
+Personal learning and document maintenance have separate evidence and state:
 
-- weekly central collection plus repo-local memory maintenance
-- monthly dialog distillation, cross-repo axiom review, and mirror generation
+- daily L1 decision observation from completed active/archived turns and notes
+- weekly L2 comparison of independent human decisions; monthly L3 eligibility
+- weekly repo-documentation collection and bounded repo-local repairs
 
-The monthly loop is implemented as a weekly-scheduled automation with a 28-day
-gate when native monthly scheduling is unavailable.
+Use `scripts/decision_memory.py` and `references/decision_memory.md` for personal
+judgment, attribution, source verification and the atomic decision ledger. Use
+`memoryctl.py` for the documentation queue. Never gate dialogue intake on a monthly
+cycle, or count operational compliance as human confirmation. `maintenance_enabled`
+can disable queue collection for a project that supplies personal evidence but
+has no repo-local documentation worker.
 
 The collector runs once from an external workspace with read-only access to
 registered repo-memory files and write access only to its own state. It does
@@ -189,15 +194,15 @@ Ask Codex to use the skill when you want to:
 - audit or scaffold the minimal repo-memory skeleton in a new or drifting repo
 - add a note-to-lessons promotion rule
 - pair repo memory with an external long-term-memory workspace
-- define weekly and monthly memory-maintenance layers
+- preserve decision trajectories and configure daily/weekly learning loops
 
 Example prompt:
 
 ```text
 Use $project-memory to clean up this repo's analysis documentation contract,
 make file placement predictable, promote durable lessons from notes, and pair
-the repo with an external long-term-memory collector using weekly and monthly
-maintenance without bloating repo docs.
+the repo with an external personal-decision collector while keeping documentation
+maintenance separate and preserving attributed scientific choices.
 ```
 
 ## Included References
@@ -209,7 +214,8 @@ maintenance without bloating repo docs.
 - `references/analysis_manifest.md`: selective manifest policy and schema
 - `references/personal_memory_bridge.md`: external observations, reflections,
   axioms, and mirror rules
-- `references/scheduled_loops.md`: two-layer weekly/monthly automation,
+- `references/decision_memory.md`: personal decision evidence, attribution, promotion and retrieval
+- `references/scheduled_loops.md`: personal learning and separate documentation automation,
   controller boundaries, protected-info rules, and queue lifecycle
 - `templates/`: conservative scaffold templates used by the bootstrap helper
 

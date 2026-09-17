@@ -1,155 +1,63 @@
 # Personal Memory Bridge
 
-Use this reference when a repo needs to stay minimal while still learning from
-user-specific preferences, troubleshooting strategies, and Codex dialogs.
+Use the existing external workspace for authorized personal and cross-project
+memory. Repositories retain their project notes and decisions; the external
+workspace owns comparison across episodes. Do not create a second repo-local
+memory file or copy full dialogues.
 
-The personal-memory bridge should stay outside the repo. The repo keeps the
-shared project memory; the external workspace keeps the distilled personal
-memory that may later inform multiple repos.
+## Distinct outcomes
 
-## Recommended external structure
+Project memory answers what the project found and what to trust. Personal memory
+answers how the investigator chose among plausible alternatives and how that
+judgment developed. A source may serve both, but an agent-written project lesson
+is not automatically evidence of a personal belief.
 
-Use or adapt a layout like this:
-
-```text
-long-term-memory/
-├── AGENTS.md
-├── REPO_REGISTRY.md
-├── config/
-│   └── repos.json
-├── state/
-│   ├── dialog_cursor.json
-│   ├── monthly_cycle.json
-│   ├── repo_cursors_v2.json
-│   ├── maintenance_queue_v2.json
-│   └── weekly_rollout.json
-├── logs/
-│   └── runs/
-├── dialogs/
-│   ├── session_manifest.jsonl
-│   └── extracts/
-├── observations/
-│   ├── repo_events/
-│   └── dialog_events/
-├── reflections/
-│   └── REFLECTIONS.md
-├── axioms/
-│   └── AXIOMS.md
-└── mirrors/
-    └── AXIOM_TO_REPO_LESSONS.md
-```
-
-Keep raw dialog logs and raw repo histories in their original systems. Store
-only source pointers, distilled extracts, and promoted memory here.
-
-Use unique run-ID logs such as `<run-id>_weekly-collector.md`,
-`<run-id>_weekly-<repo>.md`, and `<run-id>_monthly.md`.
-
-## Promotion model
-
-Use two linked promotion ladders:
-
-### Repo ladder
-
-- branch-local detail -> `NOTES.md`
-- repo map or maintained location change -> `ANALYSIS_INDEX.md`
-- durable repo-facing heuristic -> `docs/LESSONS.md`
-
-Only promote `NOTES.md -> docs/LESSONS.md` when the observation can be
-rewritten as a `Default`, `Check`, `Trap`, or `Preference` without
-branch-specific nouns.
-
-### Personal ladder
-
-- first candidate signal -> `OBSERVATIONS.md` or monthly observation files
-- 2 independent recurrences -> `REFLECTIONS.md`
-- 3 confirmations plus 28-day stability or explicit user endorsement ->
-  `AXIOMS.md`
-
-Possible sources include:
-
-- `NOTES.md`
-- `docs/LESSONS.md`
-- direct user corrections
-- Codex dialogs
-- automation decision logs
-
-Classify automation-only lessons as `automation_operations`. Keep them out of
-personal axioms unless the user explicitly endorses them as personal decision
-rules.
+The repo ladder remains branch note → reusable repo lesson. The personal ladder
+is first attributable decision → recurring bounded pattern → stable principle.
+Do not require cross-repo recurrence before recording a first observation.
 
 ## Loop ownership
 
-Keep loop ownership explicit so promotions do not overlap:
+- L1 Observer: daily completed-dialog tails and changed decision-bearing notes;
+  capture choices, costs, corrections, rejection and uncertainty.
+- L2 Reflector: weekly comparison of independent human decision episodes,
+  including counterexamples, changed context and unprocessed history.
+- L3 Axiom: monthly eligibility review without blocking L1/L2; three independent
+  human episodes over at least 28 days for automatic promotion. Explicit
+  endorsement is evidence to review, not permission to invent generality.
+- Document collector/maintenance: separate operational queue, never counted as
+  repeated human confirmation merely because an agent followed its instructions.
 
-- weekly central collection: update repo observations, repo cursors, and
-  maintenance queue entries without editing monitored repos
-- weekly repo-local maintenance: update one repo's docs, apply repo-local
-  `NOTES.md -> docs/LESSONS.md` promotions, and resolve its claimed queue items
-- monthly review: collect new dialog signals and update `REFLECTIONS.md`,
-  `AXIOMS.md`, and repo mirror candidates
+Use [decision_memory.md](decision_memory.md) and `scripts/decision_memory.py` for
+source collection, attribution validation, an atomic decision ledger and views.
+Use `scripts/memoryctl.py` only for the existing repo-documentation queue.
 
-The weekly collector should not update reflections, axioms, or mirrors. The
-monthly loop should not edit repo docs directly.
+## Evidence and trajectory
 
-Use `scripts/memoryctl.py` for deterministic access checks, bounded collection,
-proposal validation, locking, cursor updates, and atomic state writes. Keep
-semantic summarization and generalization in the LLM proposal step.
+Record context, alternatives, choice, stated reason, accepted cost, attribution,
+source path/session/message boundary/hash, date, scope, uncertainty and next test.
+Mark unstated motives as inference. Copies, regenerated notes, forked messages,
+subagent output, and automation replays remain one source lineage.
 
-## Dialog distillation rules
+Direct user corrections are especially informative when they select a priority
+over another plausible option. Preserve changes of mind with the previous choice,
+what changed, and the new scope. Do not replace a trajectory with a timeless slogan.
+Missing original sources lower confidence; a summary cannot repair lost evidence.
 
-Distill Codex dialogs. Do not copy raw session bodies.
+Repo notes can contain user-attributed decisions without being global personal
+memory. Preserve those records during cleanup. External writes follow the user's
+authorization; an authorized scheduled personal-memory workflow can operate within
+its registered scope without asking for approval for every observation.
 
-Good dialog-derived candidates include:
+## Retrieval and mirrors
 
-- repeated user corrections
-- stable communication preferences
-- accepted and rejected solution patterns
-- troubleshooting pivots that recur
-- decision rules the user keeps endorsing
+Keep active principles indexed by the decisions they help make. Load only relevant
+ones and subordinate them to current instructions and evidence. A candidate is
+not an endorsed preference. Never silently inject an unreviewed personal inference
+into all projects.
 
-Keep only:
-
-- source path or session id
-- timestamps or last updated markers
-- processed-through event boundary for sessions that continue across multiple
-  maintenance runs
-- short quoted snippets when necessary
-- paraphrased candidate principles
-- confidence and recurrence notes
-
-Do not mirror:
-
-- full raw JSONL bodies
-- long verbatim chat transcripts
-- one-off emotional context with no durable implication
-
-## Mirror rules
-
-`AXIOMS.md` may mirror back into repo `docs/LESSONS.md` only when:
-
-- the axiom is relevant to work in that repo
-- it can be rewritten in repo-facing language
-- the mirror would change future work in that repo
-
-Keep personal-only axioms in the external workspace even if they were learned
-from repo work.
-
-## Provenance fields
-
-Track enough provenance that future distillation can trust the source:
-
-- repo
-- session id
-- cwd
-- git ref or worktree
-- analysis id if known
-- branch root
-- source file
-- note archetype
-- signal type
-- candidate text
-- confidence
-
-Signals from non-main worktrees should be marked provisional until merged or
-independently repeated.
+Mirror an established principle to `docs/LESSONS.md` only when a repo-facing
+Default, Check, Trap or Preference would change future work in that repo. Keep
+source lineage, scope and exceptions. The mirror is not an independent confirmation.
+Personal-only principles stay external. Operations remain operations unless the
+user explicitly endorses them as a personal decision rule.
