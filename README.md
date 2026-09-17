@@ -1,5 +1,23 @@
 # Project Memory Skill
 
+## Source and versions
+
+This Git repository is the maintained source for the skill. Edit and test here,
+then deploy a chosen commit to agent installation directories. Installed copies
+are deployments, not separate development branches. Compare deployed files before
+updating them so local changes are reconciled rather than overwritten.
+
+Commit `60fb45f` records the installed baseline on 2026-09-17: 36 package files
+matched the local installation, 94 tests passed, and skill validation passed.
+This records the existing implementation; it does not implement the proposed
+weekly simplification. Subsequent commits describe changes from that baseline.
+Use Git history for versions rather than maintaining another version registry.
+
+Keep private source registries, dialogues, decision ledgers and personal audit
+reports outside this reusable package. Their records have their own evidence and
+revision history; upgrading the skill must not reset them. Historical design plans
+are proposals, not execution instructions unless adopted for the current task.
+
 Shareable Codex skill for setting up durable repo memory in long-lived research,
 analysis, and engineering projects, with an optional external long-term-memory
 bridge for distilled dialog and user-specific patterns.
