@@ -2,6 +2,16 @@
 
 Use this reference when pairing project memory with automation.
 
+Use the [writing style rules](../SKILL.md#writing-style) for maintained notes,
+narrative run logs, and final reports. Keep detailed receipts in linked files.
+Preserve required counts, attribution, coverage gaps, and validation failures.
+
+The local controller uses POSIX file locks to serialize runs and lock recovery.
+Its guard file stays in place; the operating system releases the lock when a
+process exits. A legacy marker is reclaimed only for a confirmed dead local
+process. Live, unreadable, or foreign-host markers require inspection. Lock age
+alone never permits recovery. Do not delete the guard file.
+
 ## Recommended model
 
 Separate learning from document upkeep:
@@ -42,6 +52,8 @@ Responsibilities:
 - acquire a single-run lock
 - verify read access to every registered repo and write access to the collector
 - read only changed repo-memory files since the last successful cursor
+- prioritize changed files by their current modification time, newest first;
+  repository and path break ties deterministically
 - reserve a small bounded share of each packet for unchanged legacy quality
   reviews using `state/quality_audit_v1.json`; an empty state creates the
   one-time backlog, and successful applies advance the round-robin audit cursor
@@ -102,6 +114,9 @@ write collector promotion files.
 Responsibilities:
 
 - claim open queue items assigned to the repo
+- process the newest target documents first, using the order returned by
+  `queue-list` (current target modification time, descending). Recheck the
+  source evidence before editing; recency establishes priority, not correctness.
 - use the registered short name for queue commands, for example
   `queue-list --workspace <collector> --repo cross-species-analysis --status open`.
   Exact registered roots are accepted and normalized; unknown or unmaintained

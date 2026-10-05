@@ -14,6 +14,11 @@
 
 ## Status
 
+- **Review 2026-10-03**: PARTIAL. The current description is 17 words; the July
+  size problem is addressed. The proposed exclusion clause is absent. Add it only
+  if incorrect skill selection occurs. The quoted July frontmatter is obsolete.
+  See the [current review](README.md#current-review--2026-10-03).
+
 - **Priority**: P2
 - **Effort**: S
 - **Risk**: LOW

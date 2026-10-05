@@ -1,12 +1,38 @@
 from __future__ import annotations
 
 import json
+import hashlib
+import re
 import subprocess
 import sys
 from pathlib import Path
 
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "validate_analysis_manifest.py"
+
+
+def test_completed_documented_template_passes(tmp_path: Path) -> None:
+    doc = SCRIPT.parents[1] / "references" / "analysis_manifest.md"
+    block = re.search(r"```json\n(.*?)\n```", doc.read_text(), re.S)
+    assert block is not None
+    value = json.loads(block.group(1))
+    script = tmp_path / "analysis.py"
+    script.write_text("print('example fixture')\n")
+    value["execution"].update({
+        "script": str(script),
+        "script_sha256": hashlib.sha256(script.read_bytes()).hexdigest(),
+        "working_directory": str(tmp_path),
+        "git_commit": "test-fixture",
+        "interpreter": sys.executable,
+        "command": [sys.executable, str(script)],
+    })
+    # The optional relationship field must not be needed to validate this shape.
+    value.pop("relationships")
+    path = tmp_path / "analysis_manifest.json"
+    path.write_text(json.dumps(value))
+    result = subprocess.run([sys.executable, str(SCRIPT), str(path)],
+                            text=True, capture_output=True, check=False)
+    assert result.returncode == 0, result.stdout + result.stderr
 
 
 def valid_manifest() -> dict:

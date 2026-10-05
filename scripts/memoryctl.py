@@ -9,10 +9,12 @@ validated state changes atomically inside the collector workspace.
 from __future__ import annotations
 
 import argparse
+import fcntl
 import hashlib
 import json
 import os
 import re
+import socket
 import subprocess
 import sys
 import tempfile
@@ -153,25 +155,64 @@ def load_registry(workspace: Path) -> dict[str, Any]:
 def workspace_lock(workspace: Path) -> Iterable[None]:
     lock_path = workspace / "state" / "memoryctl.lock"
     lock_path.parent.mkdir(parents=True, exist_ok=True)
+    # Keep this guard file in place. Kernel locks disappear when a process exits;
+    # unlinking it would let competing runs lock different inodes.
+    guard_fd = os.open(lock_path.with_suffix(".guard"), os.O_CREAT | os.O_RDWR, 0o600)
+    owned_identity = None
     try:
-        fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-    except FileExistsError as exc:
-        raise MemoryCtlError(
-            f"Another memoryctl run owns {lock_path}; inspect it before retrying"
-        ) from exc
-    try:
+        try:
+            fcntl.flock(guard_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as exc:
+            raise MemoryCtlError(f"Another memoryctl run owns {lock_path}; retry later") from exc
+        if lock_path.exists():
+            with lock_path.open() as handle:
+                identity = os.fstat(handle.fileno())
+                try:
+                    previous = json.load(handle)
+                except (ValueError, OSError) as exc:
+                    raise MemoryCtlError(f"Unreadable lock {lock_path}; inspect it before retrying") from exc
+            pid = previous.get("pid") if isinstance(previous, dict) else None
+            host = previous.get("host") if isinstance(previous, dict) else None
+            if type(pid) is not int or pid <= 0 or host not in (None, socket.gethostname()):
+                raise MemoryCtlError(f"Unknown lock owner at {lock_path}; inspect it before retrying")
+            try:
+                os.kill(pid, 0)
+            except ProcessLookupError:
+                pass  # Only confirmed dead local owners are reclaimable.
+            except OSError as exc:
+                raise MemoryCtlError(f"Cannot verify lock owner at {lock_path}; inspect it before retrying") from exc
+            else:
+                raise MemoryCtlError(f"Another memoryctl run owns {lock_path} (pid {pid}); retry later")
+            current = lock_path.stat()
+            if (current.st_dev, current.st_ino) != (identity.st_dev, identity.st_ino):
+                raise MemoryCtlError(f"Lock changed at {lock_path}; retry later")
+            lock_path.unlink()
+        try:
+            fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        except FileExistsError as exc:
+            raise MemoryCtlError(f"Another memoryctl run owns {lock_path}; retry later") from exc
         payload = {
             "pid": os.getpid(),
+            "host": socket.gethostname(),
             "started_at": utc_now().isoformat(),
         }
-        os.write(fd, canonical_json_bytes(payload))
-        os.close(fd)
+        with os.fdopen(fd, "wb") as handle:
+            identity = os.fstat(handle.fileno())
+            owned_identity = (identity.st_dev, identity.st_ino)
+            handle.write(canonical_json_bytes(payload))
+            handle.flush()
         yield
     finally:
         try:
-            lock_path.unlink()
-        except FileNotFoundError:
-            pass
+            if owned_identity is not None:
+                try:
+                    current = lock_path.stat()
+                    if (current.st_dev, current.st_ino) == owned_identity:
+                        lock_path.unlink()
+                except FileNotFoundError:
+                    pass
+        finally:
+            os.close(guard_fd)
 
 
 def is_within(path: Path, root: Path) -> bool:
@@ -427,7 +468,7 @@ def command_collect(args: argparse.Namespace) -> int:
                     record["collection_reason"] = "quality_audit"
                     quality_pending.append(record)
 
-        changed.sort(key=lambda item: (item["repo"], item["relative_path"]))
+        changed.sort(key=lambda item: (-item["mtime_ns"], item["repo"], item["relative_path"]))
         quality_pending.sort(
             key=lambda item: (item["repo"], item["relative_path"])
         )
@@ -886,6 +927,23 @@ def command_queue_list(args: argparse.Namespace) -> int:
         items = [item for item in items if item.get("repo") == repo]
     if args.status:
         items = [item for item in items if item.get("status") == args.status]
+    roots = {repo["name"]: Path(repo["root"]).resolve()
+             for repo in load_registry(workspace)["repos"]}
+
+    def recency(item: dict[str, Any]) -> tuple[int, str, str]:
+        root = roots.get(item.get("repo"))
+        modified = 0
+        if root is not None:
+            target = (root / item.get("suggested_target", "")).resolve()
+            if is_within(target, root):
+                try:
+                    modified = target.stat().st_mtime_ns
+                except OSError:
+                    pass
+        return (-modified, str(item.get("repo", "")),
+                str(item.get("idempotency_key", "")))
+
+    items = sorted(items, key=recency)
     print(json.dumps(items, indent=2, sort_keys=True))
     return 0
 

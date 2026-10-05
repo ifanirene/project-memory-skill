@@ -14,6 +14,12 @@
 
 ## Status
 
+- **Review 2026-10-03**: TODO. The collector remains in the core package; no
+  companion skill directory exists. Recommend deferring these file and installation
+  changes. The July move list also predates the separate decision-memory controller
+  and is incomplete for the current package. See the
+  [current review](README.md#current-review--2026-10-03).
+
 - **Priority**: P3
 - **Effort**: L
 - **Risk**: MED-HIGH (moves files across a new skill boundary; the risk is a

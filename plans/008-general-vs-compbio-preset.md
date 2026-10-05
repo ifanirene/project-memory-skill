@@ -15,6 +15,11 @@
 
 ## Status
 
+- **Review 2026-10-03**: TODO. Bootstrap has no `--preset` option and retains one
+  biology directory tree. Recommend deferring this change until a general-project
+  user needs another scaffold. The July steps assume an unimplemented tier option.
+  See the [current review](README.md#current-review--2026-10-03).
+
 - **Priority**: P2
 - **Effort**: M–L
 - **Risk**: MED (refactors the scaffold directory logic and template selection;

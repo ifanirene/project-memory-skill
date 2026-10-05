@@ -15,6 +15,11 @@
 
 ## Status
 
+- **Review 2026-10-03**: PARTIAL. The internal notes reference now links to the scaffolded template.
+  The copies differed only in “in this file” versus “here.” Unique rewrite guidance
+  remains. Broader rule-owner labels are still open.
+  See the [current review](README.md#current-review--2026-10-03).
+
 - **Priority**: P2
 - **Effort**: M
 - **Risk**: MED (editing shared contract prose; the risk is dropping a rule that

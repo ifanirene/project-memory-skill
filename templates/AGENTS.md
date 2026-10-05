@@ -57,6 +57,9 @@ and easy to review.
 
 ## Analysis Documentation Convention
 
+- Write `NOTES.md` in ASD-STE100 style: simple words, short sentences, active
+  voice, and consistent terms. Preserve scientific terms, exact commands,
+  numbers, attribution, and uncertainty. Do not claim formal STE compliance.
 - `ANALYSIS_INDEX.md` = repo-wide map of maintained analyses or workstreams.
 - `results/.../NOTES.md` = scientific narrative and branch-level decision
   record.

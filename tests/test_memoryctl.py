@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -87,6 +88,22 @@ def test_doctor_and_incremental_collection(tmp_path: Path) -> None:
     )
     assert outside.returncode == 2
     assert "inside the collector workspace" in outside.stderr
+
+
+def test_collection_prioritizes_newest_changed_file(tmp_path: Path) -> None:
+    workspace, repo = make_workspace(tmp_path)
+    for path in repo.rglob("*.md"):
+        os.utime(path, ns=(1_000_000_000, 1_000_000_000))
+    note = repo / "results/branch/NOTES.md"
+    os.utime(note, ns=(9_000_000_000, 9_000_000_000))
+    packet_path = workspace / "packet.json"
+    result = run_memoryctl("collect", "--workspace", str(workspace),
+                          "--output", str(packet_path), "--max-files", "1",
+                          "--quality-audit-files", "0")
+    assert result.returncode == 0, result.stderr
+    packet = json.loads(packet_path.read_text())
+    assert packet["sources"][0]["relative_path"] == "results/branch/NOTES.md"
+    assert packet["remaining_changed_files"] == 3
 
 
 def test_collection_records_dirty_git_provenance(tmp_path: Path) -> None:

@@ -13,6 +13,13 @@
 
 ## Status
 
+- **Review 2026-10-03**: DONE with a safer design than the July proposal. A persistent POSIX guard
+  serializes recovery. Confirmed dead local owners can be reclaimed. Live,
+  malformed, and foreign-host markers remain protected; replacement markers
+  survive cleanup. Focused process tests and the full suite passed. Do not execute
+  the historical age-based recovery steps below.
+  See the [current review](README.md#current-review--2026-10-03).
+
 - **Priority**: P3
 - **Effort**: S–M
 - **Risk**: LOW-MED (concurrency code; the change only *adds* a reclaim path for

@@ -216,50 +216,9 @@ Add durability rules like these when lessons drift into fact collection:
 
 ## Suggested notes template
 
-````md
-## Status
-ACTIVE | FINAL | ARCHIVED — last updated: YYYY-MM-DD
-
-## Note archetype
-branch runbook | child variant | synthesis/staging | provenance appendix
-
-## Question
-[one sentence: what this analysis is trying to answer]
-
-## Branch scope
-[one sentence: what variations belong in this file, and what would count as a new branch]
-
-## Current answer
-[the shortest defensible claim supported by the current artifacts]
-
-## Evidence
-- [result or validation that directly supports the current answer]
-
-## Analytical variants
-- Current: `runs/<variant>/analysis_manifest.json` — [why it is preferred]
-- Retained comparison: `runs/<variant>/analysis_manifest.json` — [why it remains useful]
-- Manifest decision: [required | not required — presentation-only or transient reason]
-
-## Trust status
-[what is validated and what remains uncertain]
-
-## Decisions shaping the current analysis
-- [decision and why it changes interpretation or reproduction]
-
-## Limitations
-- [caveat that constrains trust or interpretation]
-
-## Next decision
-- [the next evidence or choice needed]
-
-## Cross-document review
-- `ANALYSIS_INDEX.md`: [updated | no change — why]
-- `docs/LESSONS.md`: [updated | no change — why]
-- `Personal memory`: [updated | no change — why]
-
-## Provenance appendix
-[include only when sequence itself is needed to understand the current state]
-````
+Use the [notes template in the repo guide](../templates/AGENTS.md#notesmd-template).
+The bootstrap helper copies this template into new repo guides. Edit that copy
+when the template needs to change; do not keep a second template here.
 
 Rewrite these sections as one coherent current narrative instead of appending a
 dated section. Use the rewrite brief and kill-list protocol in

@@ -16,6 +16,11 @@
 
 ## Status
 
+- **Review 2026-10-03**: PARTIAL. Shared live-test examples now use `<memory-workspace>`. Private
+  scheduled-job paths are preserved. Codex-specific setup and licensing remain
+  open; the full portability plan is not complete.
+  See the [current review](README.md#current-review--2026-10-03).
+
 - **Priority**: P1
 - **Effort**: M
 - **Risk**: MED (touches many docs; risk is leaving a broken command or a

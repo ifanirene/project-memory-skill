@@ -13,6 +13,12 @@
 
 ## Status
 
+- **Review 2026-10-03**: DONE for the revised documentation goal. The example is labeled as a
+  template, `relationships` is optional, and a regression test validates the
+  completed example with a hash of actual fixture bytes. Do not substitute a fake
+  native hash merely to make the unfilled template pass.
+  See the [current review](README.md#current-review--2026-10-03).
+
 - **Priority**: P2
 - **Effort**: S
 - **Risk**: LOW

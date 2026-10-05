@@ -63,9 +63,15 @@ Use `.gitignore` rules equivalent to:
 !/results/**/analysis_manifest.json
 ```
 
-## Required schema
+## Schema template
 
-Use this minimum shape. Pipelines may add fields but must not rename these.
+This is a template, not a record of an executed run. Replace placeholder paths,
+commands, hashes, and example results with actual execution facts before use.
+`script_sha256` must contain the script's actual 64-character hexadecimal hash
+for a native manifest. Never copy a demonstration hash into a real record.
+
+All top-level fields below are required except `relationships`, which is
+optional. Pipelines may add fields but must not rename required fields.
 
 ```json
 {

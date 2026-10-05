@@ -49,7 +49,8 @@ Never reset, discard, or commit unrelated work.
 
 ```text
 Use $project-memory to run a live maintenance test in this repository with the
-production collector at /Volumes/IF_PHAGE/long-term-memory. Take real semantic
+production collector at <memory-workspace>. Replace this placeholder with your
+configured collector path. Take real semantic
 and maintenance actions, apply validated collector state, and leave genuine
 repo documentation changes uncommitted for my review. Do not create synthetic
 lessons, use a shadow repo, roll back the changes, or commit them. Finish by

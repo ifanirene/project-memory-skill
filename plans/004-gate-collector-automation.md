@@ -14,6 +14,12 @@
 
 ## Status
 
+- **Review 2026-10-03**: PARTIAL. `SKILL.md` now routes detailed operations to
+  references and retains both test entry points. The explicit optional-module
+  statement is absent. The July section replacements no longer fit; do not apply
+  them verbatim. A brief scope statement is sufficient if users need it. See the
+  [current review](README.md#current-review--2026-10-03).
+
 - **Priority**: P2
 - **Effort**: M
 - **Risk**: MED (rewrites two `SKILL.md` sections; the replacement text is given

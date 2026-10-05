@@ -5,6 +5,69 @@ design review of the project-memory skill. Each plan is self-contained: an
 executor with no other context can run it. Read the whole plan before starting,
 honor its STOP conditions, and update your row below when done.
 
+## Current review — 2026-10-03
+
+The checkout is now on `main`. The old main at `87a1f7c` is preserved on
+`codex/frozen-main-2026-10-03`. Main was fast-forwarded to `f7be11c`; existing
+uncommitted edits were restored without content changes. The small changes
+below remain uncommitted for review. No remote branch was pushed.
+
+The July instructions below use `c320c14`. Their quoted text, branch names,
+and test counts are historical. Use this current review to choose work.
+`DONE` means the revised goal described here is met. `PARTIAL` records both
+completed work and remaining scope. Larger redesigns remain deferred.
+
+| Plan | Status | Current result | Remaining scope |
+|------|--------|----------------|-----------------|
+| 001 | PARTIAL | [Description](../SKILL.md) is 17 words. | Add an exclusion only if incorrect skill selection occurs. |
+| 002 | PARTIAL | Personal paths were removed from shared examples in [README](../README.md) and [live-test guidance](../references/live_maintenance_test.md). | General tool portability and a license remain open. Private job paths stay intact. |
+| 003 | PARTIAL | [doc_contract.md](../references/doc_contract.md) links to the single [scaffolded notes template](../templates/AGENTS.md). | The broader rule-owner labeling proposal remains open. |
+| 004 | PARTIAL | [SKILL.md](../SKILL.md) routes detailed operations to references and keeps both test entry points. | Add an optional-module statement only if users need it. |
+| 005 | DONE | The manifest example is clearly labeled as a template. `relationships` is optional. A completed example passes the validator in a regression test. | Real manifests must use actual execution facts and hashes. |
+| 006 | DONE | A POSIX guard serializes recovery. Confirmed dead local owners can be reclaimed. Live, unknown, and foreign owners remain protected. | This controller requires a POSIX host. Never remove its persistent guard file. |
+| 007 | TODO | Bootstrap still has no `--tier`. | Deferred: change defaults only when a smaller scaffold is needed. |
+| 008 | TODO | Bootstrap still has no `--preset`. | Deferred: add another scaffold when a general-project user needs it. |
+| 009 | TODO | The collector remains in the core package. | Deferred: avoid new installation and path changes for this round. |
+
+### Five small changes completed
+
+1. **Short writing.** [SKILL.md](../SKILL.md#writing-style) now requires ASD-STE100
+   style for notes, narrative logs, and scheduled reports. Scientific terms,
+   exact facts, attribution, and uncertainty remain intact. Daily summaries
+   default to 100–150 words; weekly summaries default to 200–300. Detailed
+   receipts belong in linked artifacts. Formal STE compliance is not claimed.
+   All four saved automation prompts received the same writing guidance.
+2. **Manifest clarity.** [The example](../references/analysis_manifest.md#schema-template)
+   is labeled as a template. A test fills execution placeholders, computes a hash
+   from actual fixture bytes, and validates the documented shape without the
+   optional relationship field. No dummy hash was added to a production record.
+3. **One notes template.** The two copies differed only in “in this file” versus
+   “here.” The scaffolded copy remains. The internal reference links to it and
+   retains its unique rewrite guidance.
+4. **Stopped-job recovery.** [workspace_lock](../scripts/memoryctl.py) uses a
+   persistent guard held by the operating system. Legacy markers are reclaimed
+   only for confirmed dead local processes. Age and unreadable content never
+   authorize recovery. Cleanup preserves a replacement marker.
+5. **Shared example paths.** Public live-test examples use `<memory-workspace>`.
+   Their instructions explain how to replace it. Private automation paths,
+   schedules, model, reasoning, project targets, and permissions are unchanged.
+
+### Verification
+
+- Full suite: **106 passed**. It includes real process contention, SIGKILL
+  recovery, live legacy owners, malformed and foreign markers, replacement
+  preservation, and the completed manifest template.
+- Skill validation: **Skill is valid!**
+- Automation readback: only `prompt` and `updated_at` changed in each saved task.
+- Eight changed package files were deployed to the installed skill. All runtime,
+  reference, and template files match the `main` working tree. Backups and a
+  file-hash receipt were retained before deployment.
+- Relative links and whitespace checks passed. The pre-existing collection-order
+  changes remain present and were included in the test suite.
+- These checks do not establish a new unattended scheduler run.
+
+## Historical July plan set
+
 The set has two phases. **Phase 1 (001–006)** fixes design review **Findings
 1–8**. **Phase 2 (007–009)** implements the three **direction options** the
 maintainer chose: a tiered default, a general-vs-comp-bio preset, and splitting
@@ -35,17 +98,17 @@ the collector into a companion skill.
 
 | Plan | Title | Priority | Effort | Depends on | Status |
 |------|-------|----------|--------|------------|--------|
-| 001 | Tighten the skill's triggering `description` | P2 | S | — | TODO |
-| 002 | Make the skill genuinely shareable (paths, naming, LICENSE) | P1 | M | 001 | TODO |
-| 003 | Establish single sources of truth for duplicated blocks | P2 | M | 001, 002 | TODO |
-| 004 | Gate the collector automation as an optional module | P2 | M | 003 | TODO |
-| 005 | Align the documented manifest schema with the validator | P2 | S | — | TODO |
-| 006 | Add stale-lock recovery to memoryctl | P3 | S–M | — | TODO |
+| 001 | Tighten the skill's triggering `description` | P2 | S | — | PARTIAL |
+| 002 | Make the skill genuinely shareable (paths, naming, LICENSE) | P1 | M | 001 | PARTIAL |
+| 003 | Establish single sources of truth for duplicated blocks | P2 | M | 001, 002 | PARTIAL |
+| 004 | Gate the collector automation as an optional module | P2 | M | 003 | PARTIAL |
+| 005 | Align the documented manifest schema with the validator | P2 | S | — | DONE |
+| 006 | Add stale-lock recovery to memoryctl | P3 | S–M | — | DONE |
 | 007 | Make the memory system tiered, Tier 1 default (D2) | P2 | M | 004 | TODO |
 | 008 | General vs comp-bio preset, user's choice (D3) | P2 | M–L | 007 | TODO |
 | 009 | Split the collector into a companion skill (D1) | P3 | L | 004, 006, 008 | TODO |
 
-Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED
+Status values: TODO | PARTIAL | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED
 (one-line rationale).
 
 ## Recommended sequence

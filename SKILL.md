@@ -13,6 +13,25 @@ Also preserve why consequential choices changed. Project continuity and personal
 judgment are different outcomes: a successful documentation audit does not prove
 that the system remembers the investigator's reasoning.
 
+## Writing style
+
+Use ASD-STE100 style for `NOTES.md` and scheduled-job reports: simple words,
+active voice, consistent terms, and one main idea per sentence. Aim for no more
+than 20 words per instruction and 25 words per descriptive sentence. Preserve
+scientific terms, exact commands, numbers, attribution, and uncertainty. This
+is style guidance; do not claim formal compliance with the STE dictionary.
+
+Start notes with the current answer. Keep evidence, limits, and the next decision
+easy to find. Remove repeated summaries and dated task narration. Keep unique
+execution facts until a supported manifest owns them.
+
+For scheduled runs, keep the reader summary and narrative run log short. Use
+100–150 words for daily summaries and 200–300 for weekly summaries as defaults.
+If nothing changed, use a few lines. State the outcome, one useful finding when
+present, coverage gaps, and the next action. Preserve required coverage counts
+and meaningful validation failures. Put detailed receipts and inventories in
+linked artifacts; length limits never justify losing evidence or hiding errors.
+
 ## Boundaries
 
 Allow `AGENTS.md` to evolve, but require explicit user permission before

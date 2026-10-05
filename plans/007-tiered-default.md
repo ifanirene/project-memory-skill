@@ -14,6 +14,11 @@
 
 ## Status
 
+- **Review 2026-10-03**: TODO. Bootstrap has no `--tier` option; new mode still
+  creates the full biology scaffold. Recommend deferring this default change until
+  a smaller scaffold is needed. It does not reduce current daily or weekly report
+  length. See the [current review](README.md#current-review--2026-10-03).
+
 - **Priority**: P2
 - **Effort**: M
 - **Risk**: MED (changes bootstrap's default output and an existing test's
