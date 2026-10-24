@@ -1,0 +1,176 @@
+{
+  "checks": {
+    "render_without_index": "byte-identical to pre-change renderer",
+    "render_with_index": "only two navigation paragraphs added",
+    "second_render": "identical",
+    "in_memory_state": "unchanged",
+    "borrowed_cards": 9,
+    "source_urls_matched_to_verified_receipt": 12,
+    "borrowed_index_anchors": "all resolve",
+    "new_documents_language": "English",
+    "events_at_check": 343,
+    "personal_principles_at_check": 8,
+    "installed_local_links_checked": 25,
+    "installed_ledger_unchanged": true,
+    "active_agent_and_claude_skill_routes": "resolve to source checkout",
+    "codex_compatibility_script": "same file identity as source runtime"
+  },
+  "installation": {
+    "run_id": "working-principles-20261024T040835Z",
+    "installed_at": "2026-10-24T04:08:35.250446+00:00",
+    "new_files": {
+      "/Volumes/IF_PHAGE/long-term-memory/principles/INDEX.md": "b16496d6f3506a6dbfaebd5518e69a40b8a1798e3a9024c1ab1c0076ab88b370",
+      "/Volumes/IF_PHAGE/long-term-memory/principles/BORROWED_WORKING_PRINCIPLES.md": "8e556275a3935224bf45e8ffc9002819c37c379f78b044e23ab2c12d1e3807a7"
+    },
+    "rendered_views": {
+      "observations/DECISIONS.md": {
+        "before": "4d895c9ce20c66c9d6c3633b3cfddf3a0d745182b53fdce4029f3a16605a2f8c",
+        "after": "4d895c9ce20c66c9d6c3633b3cfddf3a0d745182b53fdce4029f3a16605a2f8c"
+      },
+      "reflections/PERSONAL_JUDGMENT.md": {
+        "before": "b5a660cbc8e5309011a7921879b844c28d491a1023223d6ef497e984a43b20e5",
+        "after": "3bb9a8acbb431ecaf92ccfe940facaf5571295f20bb031ea6d4655d83822821b"
+      },
+      "axioms/AXIOMS.md": {
+        "before": "423366a86b34bff5b7867391c67feab897d9924ef89b27b7fd9a4ae0a7f417ad",
+        "after": "8bf53c7b79e8456c90da236ef1ea0d599bc9ac9c0d126ee63a7f882bb78be739"
+      }
+    },
+    "ledger_sha256_before": "abaefeffa33c7b4633f9ccce81a7428ed562a43bf62aed38d2efd61f9c8b7503",
+    "ledger_sha256_after": "abaefeffa33c7b4633f9ccce81a7428ed562a43bf62aed38d2efd61f9c8b7503",
+    "event_count": 343,
+    "personal_principle_count": 8,
+    "borrowed_card_count": 9,
+    "backup_path": "/tmp/working-principles-20261023/working-principles-20261024T040835Z",
+    "runtime_file": "/Volumes/IF_PHAGE/project-memory-skill/scripts/decision_memory.py",
+    "runtime_sha256": "953f9799218e78e7f371c73544f4fe14baceeba2f91a3cb0f260b1be97be76cd",
+    "changed_scope": "Two new curated guidance files and two generated navigation paragraphs. Ledger, labels, schedules, and scientific results unchanged."
+  },
+  "links": [
+    {
+      "from": "/Volumes/IF_PHAGE/project-memory-skill/plans/010-working-principles-and-core-values.md",
+      "target": "../audits/2026-10-23-memory-review/REPORT.md",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/project-memory-skill/plans/010-working-principles-and-core-values.md",
+      "target": "../audits/2026-10-23-memory-review/yage-source-receipt.json",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/long-term-memory/principles/INDEX.md",
+      "target": "BORROWED_WORKING_PRINCIPLES.md#b01--define-the-decision-before-choosing-the-framework",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/long-term-memory/principles/INDEX.md",
+      "target": "BORROWED_WORKING_PRINCIPLES.md#b03--choose-diagnostics-that-separate-explanations",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/long-term-memory/principles/INDEX.md",
+      "target": "BORROWED_WORKING_PRINCIPLES.md#b06--protect-information-where-it-can-be-lost",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/long-term-memory/principles/INDEX.md",
+      "target": "BORROWED_WORKING_PRINCIPLES.md#b07--state-what-the-evidence-actually-verifies",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/long-term-memory/principles/INDEX.md",
+      "target": "BORROWED_WORKING_PRINCIPLES.md#b01--define-the-decision-before-choosing-the-framework",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/long-term-memory/principles/INDEX.md",
+      "target": "BORROWED_WORKING_PRINCIPLES.md#b04--improve-the-step-that-limits-a-useful-result",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/long-term-memory/principles/INDEX.md",
+      "target": "BORROWED_WORKING_PRINCIPLES.md#b05--design-for-the-task-and-the-person-doing-it",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/long-term-memory/principles/INDEX.md",
+      "target": "BORROWED_WORKING_PRINCIPLES.md#b08--delegate-according-to-dependencies",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/long-term-memory/principles/INDEX.md",
+      "target": "BORROWED_WORKING_PRINCIPLES.md#b02--select-memory-by-its-effect-on-future-decisions",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/long-term-memory/principles/INDEX.md",
+      "target": "BORROWED_WORKING_PRINCIPLES.md#b09--close-the-loop-with-an-observed-consequence",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/long-term-memory/principles/INDEX.md",
+      "target": "../reflections/PERSONAL_JUDGMENT.md",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/long-term-memory/principles/INDEX.md",
+      "target": "../axioms/AXIOMS.md",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/long-term-memory/principles/INDEX.md",
+      "target": "../observations/DECISIONS.md",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/long-term-memory/principles/INDEX.md",
+      "target": "BORROWED_WORKING_PRINCIPLES.md",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/long-term-memory/principles/INDEX.md",
+      "target": "/Volumes/IF_PHAGE/project-memory-skill/plans/010-working-principles-and-core-values.md",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/long-term-memory/principles/BORROWED_WORKING_PRINCIPLES.md",
+      "target": "INDEX.md",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/long-term-memory/principles/BORROWED_WORKING_PRINCIPLES.md",
+      "target": "/Volumes/IF_PHAGE/project-memory-skill/plans/010-working-principles-and-core-values.md",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/long-term-memory/principles/BORROWED_WORKING_PRINCIPLES.md",
+      "target": "/Volumes/IF_PHAGE/project-memory-skill/audits/2026-10-23-memory-review/yage-source-receipt.json",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/long-term-memory/reflections/PERSONAL_JUDGMENT.md",
+      "target": "../principles/INDEX.md",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/long-term-memory/axioms/AXIOMS.md",
+      "target": "../principles/INDEX.md",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/long-term-memory/axioms/AXIOMS.md",
+      "target": "../observations/DECISIONS.md",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/long-term-memory/axioms/AXIOMS.md",
+      "target": "../reflections/PERSONAL_JUDGMENT.md",
+      "exists": true
+    },
+    {
+      "from": "/Volumes/IF_PHAGE/long-term-memory/axioms/AXIOMS.md",
+      "target": "LEGACY_AXIOMS_2026-09-17.md",
+      "exists": true
+    }
+  ]
+}

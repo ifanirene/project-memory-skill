@@ -1,0 +1,25 @@
+Use case: infographic-diagram
+Asset type: minimal overview illustration for the project-memory skill.
+Primary request: Create a new, much more minimal image illustrating two arms of a lightweight but useful skill: management of computational projects and improvement of personalization.
+Style: restrained editorial diagram. Pure white background, crisp dark typography, very thin lines, generous whitespace. One muted accent color used sparingly for connections. No gradients, shadows, 3D, icons, illustrations, cards, colored panels, badges, numbered steps, or decorative flourishes. It should feel lightweight, clear, and thoughtfully typeset. Wide landscape canvas approximately 3:2.
+Composition: centered title at the top, then a small central origin with two thin branching arrows feeding two equally weighted columns. Two short, three-step vertical workflows. End with a small readable sentence centered near the bottom. Keep the overall amount of content very low. Main headings and step text must be large enough to read easily. Generous margins and empty space; no crowded connectors.
+
+Exact visible text:
+Title: "Project Memory"
+Central origin: "Human–AI work"
+
+Left heading: "Manage computational projects"
+Three steps connected vertically with small thin downward arrows:
+"Organize work"
+"Preserve context"
+"Reuse lessons"
+
+Right heading: "Improve personalization"
+Three steps connected vertically with small thin downward arrows:
+"Capture choices"
+"Understand patterns"
+"Guide future work"
+
+Small footer: "Project decisions inform personal memory; relevant principles guide project work."
+
+Constraints: Render all wording correctly. Only the text specified above. The two arms have equal visual importance. Do not add L1/L2/L3, schedules, thresholds, implementation filenames, or extra explanations. No human figures, brains, robots, folders, notebook icons, or database cylinders. No enclosing boxes. No watermark. This is a conceptual overview, not a claim that personalization is automatic or that scheduled workflows are currently running.

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Collect and validate personal decision evidence, separately from doc upkeep.
 
-Inputs: config/repos.json, configured Codex sessions and maintained notes.
+Inputs: config/repos.json, configured Codex/Claude Code sessions and maintained notes.
 Outputs: bounded pointer/excerpt packets; one atomic decision ledger; Markdown views.
 Parameters: source and session limits bound semantic review, not proof of coverage.
 Dependencies: Python 3.10+ standard library; sibling memoryctl.py; SSH for SCG.
@@ -22,6 +22,7 @@ import sys
 import uuid
 
 from memoryctl import atomic_write_json, atomic_write_text, workspace_lock
+from session_formats import session_header, message_body, message_text, claude_text, claude_records
 from decision_history import (
     refresh_axiom_health, retain_principle_history, validate_event_relations,
 )
@@ -77,6 +78,9 @@ def clean_user(text):
 
 def session_records(path, repo):
     """Read only completed turns. Row hashes survive later session appends."""
+    header = session_header(path)
+    if header.get("provider") == "claude_code":
+        return claude_records(path, repo, header, digest, clean_context)
     messages = []
     completed_line = 0
     meta = {}
@@ -150,14 +154,21 @@ def inventory_repo(repo, session_roots, state, session_limit):
             records.append(record)
     pending = []
     catalog = {}
+    providers = {}
+    root_health = []
     aliases = repo.get("cwd_aliases", [])
     for session_root in session_roots:
+        health = {"root": str(session_root),
+                  "status": "available" if Path(session_root).is_dir() else "unavailable",
+                  "unclassified_sessions": 0}
+        root_health.append(health)
         for path in Path(session_root).glob("**/*.jsonl"):
-            with path.open(errors="replace") as handle:
-                try:
-                    meta = json.loads(handle.readline()).get("payload", {})
-                except ValueError:
-                    continue
+            if "subagents" in path.parts or path.name.startswith("agent-"):
+                continue
+            meta = session_header(path)
+            if not meta:
+                health["unclassified_sessions"] += 1
+                continue
             cwd = meta.get("cwd", "")
             if not any(cwd == r or cwd.startswith(r.rstrip("/") + "/")
                        for r in [str(root), *aliases]):
@@ -166,7 +177,8 @@ def inventory_repo(repo, session_roots, state, session_limit):
                 continue
             stat = path.stat()
             signature = [stat.st_size, stat.st_mtime_ns]
-            key = meta.get("id") or str(path)
+            key = (meta.get("provider", "codex"), meta.get("id") or str(path))
+            providers[str(path)] = meta.get("provider", "codex")
             previous = catalog.get(key)
             if previous is None or signature[1] > previous[1][1]:
                 catalog[key] = (path, signature)
@@ -180,9 +192,17 @@ def inventory_repo(repo, session_roots, state, session_limit):
     pending.sort(key=lambda pair: (attempts.get(str(pair[0]), ""), pair[1][1]))
     chosen = []
     while pending and len(chosen) < session_limit:
-        oldest_attempt = attempts.get(str(pending[0][0]), "")
+        # Give both native histories scan capacity when both have pending sessions.
+        counts = {providers[str(pair[0])]: 0 for pair in pending}
+        for pair in chosen:
+            if providers[str(pair[0])] in counts:
+                counts[providers[str(pair[0])]] += 1
+        minimum = min(counts.values())
+        eligible = [i for i, pair in enumerate(pending)
+                    if counts[providers[str(pair[0])]] == minimum]
+        oldest_attempt = min(attempts.get(str(pending[i][0]), "") for i in eligible)
         peers = [i for i, pair in enumerate(pending)
-                 if attempts.get(str(pair[0]), "") == oldest_attempt]
+                 if i in eligible and attempts.get(str(pair[0]), "") == oldest_attempt]
         chosen.append(pending.pop(peers[-1] if len(chosen) % 2 == 0 else peers[0]))
     scans = []
     for path, signature in chosen:
@@ -196,11 +216,17 @@ def inventory_repo(repo, session_roots, state, session_limit):
         "repo": repo["name"], "documents_discovered": len(paths),
         "root_sessions_discovered": total_sessions, "sessions_scanned": len(chosen),
         "sessions_not_scanned": len(pending), "status": "available",
+        "dialog_roots": root_health,
+        "dialog_providers": {provider: {
+            "sessions_discovered": sum(providers[str(p[0])] == provider for p in catalog.values()),
+            "sessions_scanned": sum(providers[str(p[0])] == provider for p in chosen),
+            "sessions_not_scanned": sum(providers[str(p[0])] == provider for p in pending),
+        } for provider in sorted(set(providers.values()))},
     }
 
 
 def recover_session_path(source):
-    """Recover moved sessions within the configured Codex inventory only."""
+    """Recover moved sessions within configured roots, by ID and unchanged row."""
     roots = source.get("session_roots", [])
     original = Path(source["path"])
     if not roots:
@@ -213,9 +239,9 @@ def recover_session_path(source):
         for candidate in Path(root).glob("**/*.jsonl"):
             try:
                 with candidate.open(errors="replace") as handle:
-                    row = json.loads(handle.readline())
-                    if (row.get("type") != "session_meta"
-                            or row.get("payload", {}).get("id") != source["episode_id"]):
+                    meta = session_header(candidate)
+                    if (meta.get("id") != source["episode_id"]
+                            or meta.get("provider") != source.get("provider", "codex")):
                         continue
                     handle.seek(0)
                     for number, line in enumerate(handle, 1):
@@ -247,15 +273,16 @@ def full_source(source):
         return data.decode(errors="replace")
     if not path.exists():
         path = recover_session_path(source)
-    with path.open(errors="replace") as handle:
-        meta = json.loads(handle.readline())
-    if (meta.get("type") != "session_meta"
-            or meta.get("payload", {}).get("id") != source["episode_id"]):
+    meta = session_header(path)
+    if (meta.get("id") != source["episode_id"]
+            or meta.get("provider") != source.get("provider", "codex")):
         raise ValueError("Source session ID changed: " + str(path))
     for number, line in enumerate(path.open(errors="replace"), 1):
         if number == source["line"]:
             if hashlib.sha256(line.encode()).hexdigest() != source["sha256"]:
                 raise ValueError("Source row changed: " + str(path))
+            if source.get("provider") == "claude_code":
+                return claude_text(json.loads(line), clean_context)
             body = json.loads(line)["payload"]
             return clean_user("\n".join(x.get("text", "") for x in body["content"]
                                       if x.get("type") in {"input_text", "text"}))
@@ -303,21 +330,16 @@ def read_context(source, max_chars=6000):
                 row = json.loads(raw)
             except ValueError:
                 continue
-            body = row.get("payload", {})
-            if number == 1 and body.get("id") != source["episode_id"]:
-                raise ValueError("Source session ID changed: " + str(path))
+            body = message_body(row, source.get("provider", "codex"))
             is_target = number == source["line"]
             sha = hashlib.sha256(raw.encode()).hexdigest()
             if is_target and sha != source["sha256"]:
                 raise ValueError("Source row changed: " + str(path))
-            if (row.get("type") != "response_item"
-                    or body.get("role") not in {"user", "assistant"}
+            if (body.get("role") not in {"user", "assistant"}
                     or body.get("type", "message") != "message"):
                 continue
-            content = clean_context("\n".join(
-                item.get("text", "") for item in body.get("content", [])
-                if item.get("type") in {"input_text", "output_text", "text"}
-            ))
+            content = (claude_text(row, clean_context) if source.get("provider") == "claude_code"
+                       else clean_context(message_text(body)))
             if not content:
                 if is_target:
                     raise ValueError("Source context omitted by credential/context filter")
@@ -435,6 +457,10 @@ def validate_principles(state, principles):
 
 
 def render(workspace, state):
+    working_index = workspace / "principles/INDEX.md"
+    working_link = (["[Working principles for this task](../principles/INDEX.md) — "
+                     "scoped L2 and borrowed guidance; L3 promotion is not required.", ""]
+                    if working_index.is_file() else [])
     lines = ["# Personal decision evidence", "", "Generated from state/decision_memory_v1.json.", ""]
     for e in state["events"]:
         lines += [f"## {e['id']} — {e['choice']}", ""]
@@ -456,7 +482,7 @@ def render(workspace, state):
             lines += [f"- Superseded by: {', '.join(successors)} (historical evidence retained)"]
         lines.append("")
     atomic_write_text(workspace / "observations/DECISIONS.md", "\n".join(lines))
-    lines = ["# Personal judgment principles", "", "Candidates are interpretations, not endorsed identity.", ""]
+    lines = ["# Personal judgment principles", "", "Candidates are interpretations, not endorsed identity.", ""] + working_link
     for p in state["principles"]:
         lines += [f"## {p['id']} [{p['status']}] {p['statement']}", ""]
         for key in ("scope", "predicted_choice", "cost", "boundary", "support_event_ids",
@@ -475,7 +501,7 @@ def render(workspace, state):
     atomic_write_text(workspace / "reflections/PERSONAL_JUDGMENT.md", "\n".join(lines))
     lines = ["# Axioms — task routing", "",
              "Derived from verified human decision episodes, not immutable traits.",
-             "Current instructions and evidence take precedence. The JSON ledger is authoritative.", ""]
+             "Current instructions and evidence take precedence. The JSON ledger is authoritative.", ""] + working_link
     for p in state["principles"]:
         if p["status"] == "axiom":
             lines += [f"## {p['id']}", "", p["statement"], "",

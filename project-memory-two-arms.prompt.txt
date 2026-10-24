@@ -1,0 +1,55 @@
+Use case: infographic-diagram
+Asset type: polished landscape explanatory illustration for the project-memory-skill repository, suitable for a research presentation and README.
+Primary request: Illustrate the pipeline organization of Project Memory with two equally prominent arms: management of computational projects and improving personalization. It must be understandable at a glance, with accurate workflow logic from the repository documentation.
+Style/medium: refined editorial infographic, crisp vector-like linework rendered as a high-resolution bitmap, restrained flat fills, subtle paper-white background, simple meaningful icons, strong typography, generous whitespace. No photorealism, 3D, decorative robots, brains, mascots, or stock art. Use two distinct harmonious accent colors to distinguish the arms; dark legible text. Wide landscape approximately 16:10. Make the headings very prominent, with short readable secondary labels. No tiny text.
+Composition: a small shared source centered beneath the main title forks into two equal vertical workflow columns. Use clear downward arrows within each column. Four numbered cards per column, aligned by row. An outcome strip beneath each column. A small separate footer explains the bridge. Prioritize clarity and an elegant editorial layout over density.
+
+TEXT AND STRUCTURE (render quoted labels verbatim; hierarchy and line breaks may adapt):
+
+Top title: "Project Memory"
+Small centered source with a work-and-dialogue icon: "Human–AI work"
+Source sublabel: "Analyses · conversations · decisions"
+A split connector from this source goes to the two arm headings.
+
+LEFT ARM heading: "1  Manage computational projects"
+Small scope label: "Project-local records"
+Four downward connected cards:
+1. "Organize"
+   "Rules, file locations, workstream index"
+   Small visual: organized folders and a map.
+2. "Record"
+   "Findings, decisions, run provenance"
+   Small visual: notebook beside a run record.
+3. "Distill"
+   "Reusable project lessons"
+   Small visual: a few clearly organized knowledge cards.
+4. "Maintain"
+   "Audit → queue → repo-local repair"
+   Small visual: check marks and a small circular maintenance arrow.
+Left outcome, emphasized: "Know what exists, what to trust, and what to rerun"
+
+RIGHT ARM heading: "2  Improve personalization"
+Small scope label: "Private external memory"
+Four downward connected cards:
+1. "Observe · L1"
+   "Daily: capture choices, reasons, tradeoffs"
+   Small visual: dialogue snippets feeding an attributed evidence card.
+2. "Reflect · L2"
+   "Weekly: compare independent decisions"
+   Small badge: "2+ episodes"
+   Small visual: comparison of evidence cards.
+3. "Stabilize · L3"
+   "Monthly: review scoped principles"
+   Small badge: "3+ episodes over 28+ days"
+   Small visual: principle card with scope markers.
+4. "Retrieve & revise"
+   "Apply relevant preferences; learn from corrections"
+   Small visual: selecting a relevant card and a feedback arrow.
+Right outcome, emphasized: "Remember how you choose, why, and when it changes"
+
+Footer bridge: separate slim horizontal strip beneath the outcome strips, with two short clearly distinguished directional paths and small arrows:
+Left-to-right path: "Attributed project decisions → personal evidence"
+Right-to-left path: "Relevant personal principles → project lessons"
+Final small readable footer line: "Keep sources, scope, counterexamples, and changes of mind"
+
+Logical constraints: The arms have distinct records and purposes. Project notes and project lessons are NOT automatically personal beliefs. Personal learning requires attributable human choices. L2/L3 gates indicate minimum evidence for promotion; progression is conditional rather than guaranteed. The private external memory is not stored in the reusable skill repository. The documentation collector queues changes; repo-local maintenance performs repairs. The diagram describes the documented design, not evidence that live schedules have run. Do not add claims of autonomous self-training or guaranteed personalization. Do not show a shared database that merges the two stores. All arrows should have clear endpoints; no crowded or intersecting connectors. No extra text, no watermark.
