@@ -26,7 +26,7 @@ A decorative output should point to the analytical variant that supplied its
 data. If a nominally decorative rerun changes a subset, threshold,
 transformation, fitted curve, or statistical result, treat it as analytical.
 
-Examples from `topic_analysis`:
+Generic examples:
 
 - cluster parameter searches, mediation variants, shared-control matching,
   permutation analyses, and condition-specific inferential summaries require

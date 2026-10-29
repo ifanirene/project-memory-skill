@@ -172,7 +172,7 @@ Responsibilities:
   `queue-list` (current target modification time, descending). Recheck the
   source evidence before editing; recency establishes priority, not correctness.
 - use the registered short name for queue commands, for example
-  `queue-list --workspace <collector> --repo cross-species-analysis --status open`.
+  `queue-list --workspace <collector> --repo example-project --status open`.
   Exact registered roots are accepted and normalized; unknown or unmaintained
   repos must fail instead of silently returning an empty queue.
 - run `bootstrap_repo_memory.py --mode monitored --audit-only` to detect global

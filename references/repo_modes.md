@@ -58,9 +58,4 @@ Repair the smallest governing contract first. Then clean one or two bounded
 branches per maintenance run. Do not move large legacy trees, rename outputs,
 or generate fake manifests merely to resemble a new repo.
 
-`topic_analysis` is the model for this mode: it already has an index, lessons,
-many maintained outputs, legacy `results/output/`, 12 direct variant
-directories below `runs/` (plus deeper output subdirectories),
-and several ad hoc metadata formats. The right response is to add the manifest
-contract, make manifests trackable, identify active provenance-sensitive runs,
-and migrate them gradually—not to reorganize the entire repository.
+For an established repository with legacy output roots and mixed metadata, add the manifest contract and migrate active runs gradually. Preserve the existing organization.

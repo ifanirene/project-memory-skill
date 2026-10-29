@@ -2,7 +2,7 @@
 name: project-memory
 description: Maintain project notes, provenance and lessons; preserve attributed decisions and distill personal judgment through configured memory loops.
 metadata:
-  version: "0.2.0"
+  version: "0.2.1"
 ---
 
 # Project Memory

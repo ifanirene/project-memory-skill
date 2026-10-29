@@ -2,3 +2,9 @@
 .pytest_cache/
 __pycache__/
 *.pyc
+
+# Local reviews and operational snapshots contain private project context.
+/audits/
+/plans/
+/project-memory-skill-structure.png
+/project-memory-skill-structure.excalidraw

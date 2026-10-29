@@ -10,7 +10,7 @@ Reuse an existing installation when present. Otherwise, clone a fixed release of
 the maintained source repository:
 
 ```sh
-git clone --branch v0.2.0 --depth 1 https://github.com/ifanirene/project-memory-skill.git /path/to/project-memory-skill
+git clone --branch v0.2.1 --depth 1 https://github.com/ifanirene/project-memory-skill.git /path/to/project-memory-skill
 python3 /path/to/project-memory-skill/scripts/install.py
 ```
 

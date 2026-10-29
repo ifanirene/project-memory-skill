@@ -23,7 +23,7 @@ The goal is context that changes the next decision. A chat archive can recover a
 Install the stable release with Python 3.10+ and Git (macOS or Linux):
 
 ```sh
-git clone --branch v0.2.0 --depth 1 https://github.com/ifanirene/project-memory-skill.git
+git clone --branch v0.2.1 --depth 1 https://github.com/ifanirene/project-memory-skill.git
 python3 project-memory-skill/scripts/install.py
 ```
 
@@ -41,8 +41,8 @@ Project documentation works on its own. Add private personal memory and schedule
 
 **Versions**
 
-The previous GitHub main is preserved as `v0.1.0` and
-`codex/archive-v0.1.0`. The current release is `v0.2.0`; `main` moves forward.
+The earlier baseline is preserved as `v0.1.0` and `codex/archive-v0.1.0`.
+The current release is `v0.2.1`; `main` moves forward.
 Install a tag for a fixed version. Read the installed `VERSION` file to check it.
 See [changes](CHANGELOG.md) and [release policy](docs/releases.md).
 
