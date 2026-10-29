@@ -602,3 +602,25 @@ def test_protected_agents_item_requires_permission_source(tmp_path: Path) -> Non
         "user request 2026-07-11 approving the exact patch",
     )
     assert approved.returncode == 0, approved.stderr
+
+
+def test_collection_preserves_embedded_repository_boundaries(tmp_path: Path) -> None:
+    workspace, repo = make_workspace(tmp_path)
+    # Both a normal embedded checkout and a worktree-style .git file own notes.
+    for name, worktree in [('nested-repo', False), ('nested-worktree', True)]:
+        nested = repo / name
+        nested.mkdir()
+        if worktree:
+            (nested / '.git').write_text('gitdir: /not-read-by-collector\n')
+        else:
+            (nested / '.git').mkdir()
+        (nested / 'NOTES.md').write_text('Private independent project.\n')
+    packet_path = workspace / 'runs' / 'boundaries.json'
+    result = run_memoryctl('collect', '--workspace', str(workspace), '--output', str(packet_path))
+    assert result.returncode == 0, result.stderr
+    packet = json.loads(packet_path.read_text())
+    serialized = json.dumps(packet)
+    assert 'Private independent project' not in serialized
+    assert 'nested-repo/NOTES.md' not in serialized
+    assert 'nested-worktree/NOTES.md' not in serialized
+    assert 'results/branch/NOTES.md' in serialized

@@ -86,6 +86,19 @@ def test_native_secrets_and_subagents_are_excluded(tmp_path):
     assert dm.session_records(write_rows(tmp_path / "side.jsonl", rows), "repo") == []
 
 
+@pytest.mark.parametrize('injected', [
+    '<skill><name>example</name>Instructions that are not a human decision.</skill>',
+    '<external_codex_apps_open_page>{"page_id":null}</external_codex_apps_open_page>',
+])
+def test_native_injected_skill_and_app_event_are_excluded(tmp_path, injected):
+    rows = native_rows(tmp_path)
+    rows[3]['message']['content'] = injected
+    path = write_rows(tmp_path / 'session.jsonl', rows)
+    records = dm.session_records(path, 'repo')
+    assert len(records) == 1
+    assert 'Compare keeping' in dm.full_source(records[0])
+
+
 def test_native_forks_deduplicate_and_relocation_checks_original_row(tmp_path):
     path = write_rows(tmp_path / "active/session.jsonl", native_rows(tmp_path))
     source = dm.session_records(path, "repo")[1]

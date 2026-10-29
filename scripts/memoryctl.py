@@ -233,6 +233,11 @@ def discover_files(repo: dict[str, Any]) -> list[Path]:
                 continue
             resolved = path.resolve()
             if is_within(resolved, root):
+                # An embedded checkout owns its own documentation. Personal
+                # decision intake has a separate, explicitly configured scope.
+                if any((parent / ".git").exists() for parent in resolved.parents
+                       if parent != root and is_within(parent, root)):
+                    continue
                 found.add(resolved)
     return sorted(found)
 

@@ -12,19 +12,21 @@ answers how the investigator chose among plausible alternatives and how that
 judgment developed. A source may serve both, but an agent-written project lesson
 is not automatically evidence of a personal belief.
 
-The repo ladder remains branch note → reusable repo lesson. The personal ladder
-is first attributable decision → recurring bounded pattern → stable principle.
-Do not require cross-repo recurrence before recording a first observation.
+The repo ladder remains branch note → reusable repo lesson. Personal memory
+distinguishes decision evidence (L1), usable working principles (L2), and proposed
+core commitments (L3). One meaningful judgment can support L2 when its reusable
+reasoning and boundaries are clear. A specific arrangement can remain a case.
 
 ## Loop ownership
 
 - L1 Observer: daily completed-dialog tails and changed decision-bearing notes;
   capture choices, costs, corrections, rejection and uncertainty.
 - L2 Reflector: weekly comparison of independent human decision episodes,
-  including counterexamples, changed context and unprocessed history.
-- L3 Axiom: monthly eligibility review without blocking L1/L2; three independent
-  human episodes over at least 28 days for automatic promotion. Explicit
-  endorsement is evidence to review, not permission to invent generality.
+  including counterexamples, changed context, useful applications, and corrections.
+  Maintain the readable library and summarize meaningful additions and changes.
+- L3 core commitments: monthly interpretation of values and outlook, reviewed
+  with the user. Frequency and elapsed time do not establish depth. Do not
+  automatically promote technical rules into core values.
 - Document collector/maintenance: separate operational queue, never counted as
   repeated human confirmation merely because an agent followed its instructions.
 
@@ -51,10 +53,19 @@ its registered scope without asking for approval for every observation.
 
 ## Retrieval and mirrors
 
-Keep active principles indexed by the decisions they help make. Load only relevant
-ones and subordinate them to current instructions and evidence. A candidate is
-not an endorsed preference. Never silently inject an unreviewed personal inference
-into all projects.
+Setup and task instructions are reproducible from
+[personal_memory_workflows.md](personal_memory_workflows.md). Use `task-context`
+with selected stable IDs to check current evidence and load full documents.
+Record material use or correction in a registered project note, so the existing
+daily collector can bring it back into evidence review. No separate use ledger is needed.
+
+Start at `principles/INDEX.md` in the configured workspace. Open only relevant
+principle documents, not the whole library or generated evidence history. L2 is
+available without individual approval; current instructions and evidence prevail.
+Origin and tentative scope stay inside each document. A candidate is not an
+endorsed preference. Do not turn tentative guidance into global instructions.
+See [the library guidance](decision_memory.md#working-principle-library) for the
+shared format, merging, and brief feedback in existing project notes.
 
 Mirror an established principle to `docs/LESSONS.md` only when a repo-facing
 Default, Check, Trap or Preference would change future work in that repo. Keep

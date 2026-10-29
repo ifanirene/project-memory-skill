@@ -52,7 +52,8 @@ def ledger(workspace):
 
 def clean_user(text):
     """Remove injected context; never interpret it as the person's own words."""
-    for tag in ("in-app-browser-context", "recommended_plugins", "environment_context"):
+    for tag in ("in-app-browser-context", "recommended_plugins", "environment_context",
+                "skill", "external_codex_apps_open_page"):
         text = re.sub(rf"<{tag}\b[^>]*>[\s\S]*?</{tag}>", "", text)
     for separator in ("## My request:", "## My request for Codex:"):
         if separator in text:
@@ -60,7 +61,8 @@ def clean_user(text):
     text = text.strip()
     if text.startswith(("# AGENTS.md instructions", "<environment_context>",
                         "<recommended_plugins>", "<turn_aborted>",
-                        "<codex_internal_context", "<subagent_notification")):
+                        "<codex_internal_context", "<subagent_notification",
+                        "<skill>", "<external_codex_apps_")):
         return ""
     if text.startswith("<send_user_message_question_reply>"):
         try:
@@ -457,6 +459,15 @@ def validate_principles(state, principles):
 
 
 def render(workspace, state):
+    # Library documents are authored separately. Refresh only the derived index;
+    # changed evidence must never silently acknowledge its own semantic review.
+    from principle_library import sync_if_managed
+    try:
+        library = sync_if_managed(workspace, state)
+        if library and library["needs_review"]:
+            print("Working principles need evidence review: " + ", ".join(library["needs_review"]))
+    except (ValueError, OSError) as exc:
+        print(f"Working-principle index needs repair: {exc}", file=sys.stderr)
     working_index = workspace / "principles/INDEX.md"
     working_link = (["[Working principles for this task](../principles/INDEX.md) — "
                      "scoped L2 and borrowed guidance; L3 promotion is not required.", ""]

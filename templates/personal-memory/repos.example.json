@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "repos": [
+    {
+      "name": "example-project",
+      "root": "/absolute/path/to/project",
+      "decision_patterns": ["**/NOTES.md", "docs/LESSONS.md"],
+      "maintenance_enabled": false
+    }
+  ],
+  "dialog_roots": ["/absolute/path/to/authorized/session/root"]
+}

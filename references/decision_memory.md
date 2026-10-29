@@ -6,23 +6,26 @@ separate from `memoryctl.py` and its document-maintenance queue.
 
 ## Success
 
-Capture consequential human choices in context, then identify patterns that
-predict a useful future choice. A principle should say when the person prefers
-X over Y, why, what cost they accept, and when the preference does not apply.
-Do not optimize for an axiom count or for generic good-science statements.
+Capture consequential human choices in context, then explain reusable judgment.
+For a personal interpretation, preserve the choice, stated reason, accepted cost,
+and limits. Keep unstated motives unknown. General good practice or borrowed
+guidance can be useful without being evidence of a distinctive personal belief.
+Do not optimize for an axiom count.
 
-L1 captures first occurrences and changes of mind; recurrence is not an admission
-requirement. L2 compares independent episodes weekly. L3 promotes stable, bounded
-principles after three independent human episodes spanning at least 28 days.
+L1 captures first occurrences and changes of mind. L2 provides reusable working
+principles and reviews them weekly. One meaningful judgment can support a usable
+L2 principle when its reasoning and boundaries are clear. L3 examines core values
+and outlook with the user; frequency and elapsed time do not establish that depth.
 Elapsed time, repeated instructions, unchanged notes, mirrored lessons, subagent
 copies, scheduled prompts and agent compliance are not independent confirmations.
 The same repo can provide independent episodes. Different repo names do not
 make copies of the same event independent.
 
 An explicitly endorsed principle is strong evidence; retain its exact source.
-The current controller still uses the conservative recurrence gate for automatic
-L3 promotion. A proposed exception needs a separate explicit endorsement review;
-do not silently bypass the validator or claim an endorsement the user did not give.
+The controller's candidate/reflection/axiom labels are older evidence-status
+labels. Its recurrence checks remain enforced, but they do not gate access to
+the readable L2 library or define L3. Do not bypass validation or promote a new
+core-value interpretation automatically. Review that interpretation with the user.
 
 ## Collection and coverage
 
@@ -108,7 +111,7 @@ authority is `state/decision_memory_v1.json`. Markdown views are regenerable wit
 `render --workspace <root>` and never independent evidence. Source changes, bad
 quotes, false direct-user attribution and stale state fail before commit.
 
-## L2/L3 review contract
+## Evidence-ledger review contract
 
 Read the ledger's events, existing principles, and relevant original sources.
 Look for disconfirming choices and contextual changes, not just matching phrases.
@@ -124,10 +127,11 @@ blocks promotion unless its scope and resolution are explicitly explained.
 
 Use `apply --workspace <root> --proposal <review> --validate-only`, then apply.
 Omitted IDs remain; retire a principle explicitly instead of silently deleting it.
-Candidates may come from one episode; reflections need two distinct human
-episodes; axioms need three across 28 days. Automated structural validation does
-not prove the semantic interpretation is true. Present new interpretations as
-inferences and make correction easy.
+The existing validator allows candidates from one episode; reflections need two
+distinct human episodes; legacy axioms need three across 28 days. These labels
+describe the retained evidence status. A candidate can support a readable L2
+document without waiting for a label change. Automated structural validation does
+not establish the interpretation's truth or depth. Present inferences as such.
 
 The authority retains principle revisions, with the prior and replacement
 objects, run ID, time and reason. Initial migration captures an explicitly labeled
@@ -141,6 +145,51 @@ If a source cannot be recovered, preserve its existing quote and last verificati
 record, and show that its original context is currently unverifiable. This does
 not prove the choice was wrong, and does not block recording unrelated evidence.
 Do not silently promote it further or describe it as freshly verified.
+
+## Working-principle library
+
+Follow [the complete procedure](personal_memory_workflows.md) for setup, daily
+collection, weekly review, and task use. `principle_library.py` validates authored
+documents and evidence references, builds the index, and retrieves selected IDs.
+It does not make semantic judgments or turn borrowed guidance into personal evidence.
+
+Use `principles/INDEX.md` as the entry point. Group entries by the decisions they
+help make. Give each a clear linked title and one plain English sentence. Do not
+separate borrowed and personal sources in the index. Read only relevant files.
+
+Each principle has one file using [the shared template](../templates/PRINCIPLE.md).
+Explain its purpose and reasoning before application. Keep source origin, cases,
+evidence IDs, uncertainty, and important exceptions in the document. Generated
+ledger views retain the detailed evidence history; they are not the reading path
+for ordinary tasks. Do not hand-edit those generated views.
+
+Combine genuinely shared ideas while preserving each source's cases and limits.
+Keep related ideas separate when they resolve different choices. A specific
+experimental arrangement can remain a linked case rather than become a general
+rule. Do not promote it merely because it has been copied or repeated.
+
+L2 entries can enter use without individual approval. For a new personal
+interpretation, first preserve its evidence through the validated ledger contract;
+a single-episode candidate can then have a readable document. Borrowed guidance
+keeps external sources in its document and does not create personal evidence.
+When an interpretation changes, preserve the ledger revision and update the
+affected document and index. Rewording does not create another support episode.
+
+Use stable IDs such as X01 in document metadata and task notes. Keep older IDs as
+aliases when merging. Do not renumber entries when their category or title changes.
+`sync --reviewed <IDs> --review-packet <saved-review.json>` records the linked
+evidence after semantic review. Save the `review` output before inspecting it;
+acknowledgement rejects changed or missing selected evidence before writing.
+Read any changed evidence with a new packet before retrying.
+Later changes to linked interpretations or superseding events flag those entries;
+`task-context` checks live state and refuses stale or retired guidance. Plain sync
+does not acknowledge review. Source health stays separate from this fingerprint.
+All index edits come from documents through sync. Keep authored sources in Git.
+
+Only consequential use, corrections, or important exceptions need a brief note in
+the existing project record. Do not add a usage ledger, scores, or application
+quotas. Weekly review summarizes meaningful additions and changes. L3 proposals
+about core commitments require discussion with the user, not automatic promotion.
 
 ## Retrieval and trajectory
 

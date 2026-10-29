@@ -1,0 +1,10 @@
+Automation context: weekly personal memory review.
+
+Use the project-memory skill at {{SKILL_ROOT}}/SKILL.md.
+Memory workspace: {{WORKSPACE}}
+Python: {{PYTHON}}
+
+Read workspace AGENTS.md and config/repos.json. Follow the Weekly review section
+of {{SKILL_ROOT}}/references/personal_memory_workflows.md. That source owns the
+evidence review, principle updates, index generation, and monthly L3 discussion.
+Keep writes inside the memory workspace. Summarize meaningful changes in English.

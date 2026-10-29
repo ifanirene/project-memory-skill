@@ -1,6 +1,8 @@
 ---
 name: project-memory
 description: Maintain project notes, provenance and lessons; preserve attributed decisions and distill personal judgment through configured memory loops.
+metadata:
+  version: "0.2.0"
 ---
 
 # Project Memory
@@ -74,6 +76,11 @@ accepted implementation, and scientific observation. Do not infer a personal
 preference from agent compliance or silence. Preserve decision-changing history
 during cleanup, including exceptions; do not create empty records for routine work.
 
+Local lessons and personal principles have different scopes. Keep concrete repo
+checks in lessons and broader reasoning in the principle library. Record material
+principle use in the owning note and briefly identify its ID, changed choice, and
+observed outcome in the task handoff. Retrieval alone is not evidence of benefit.
+
 ## Choose the operation
 
 - **Setup or structural drift repair:** read
@@ -109,6 +116,13 @@ during cleanup, including exceptions; do not create empty records for routine wo
 - **Authorized external-memory work:** read
   [personal_memory_bridge.md](references/personal_memory_bridge.md) for promotion,
   provenance, and mirror rules. Distill rather than copying raw dialog histories.
+- **Use working principles:** read the configured memory workspace's
+  `principles/INDEX.md`, then only the entries relevant to the current decision.
+  Retrieve selected IDs with `scripts/principle_library.py task-context --workspace
+  <root> --ids X01 X02`. It checks the current linked evidence before returning
+  complete documents. Select none when the library does not help.
+  For new or revised entries, follow the [principle format](templates/PRINCIPLE.md)
+  and the [library guidance](references/decision_memory.md#working-principle-library).
 - **Personal trajectory, missing axioms, or decision distillation:** also read
   [decision_memory.md](references/decision_memory.md). Use the separate decision
   collector and ledger; document-maintenance queue counts are not learning metrics.
@@ -117,10 +131,22 @@ during cleanup, including exceptions; do not create empty records for routine wo
   monitored repos and writes only its own state. Repo-local maintenance owns its
   queue claims and closes them as resolved, deferred, or rejected. Keep scope
   bounded; preserve the protected-information approval boundary.
+- **Install or reproduce personal memory:** use
+  [personal_memory_workflows.md](references/personal_memory_workflows.md) and
+  `scripts/principle_library.py setup`. The skill owns the procedure; generated
+  schedule prompts contain only paths and an operation. Rebuild the index from
+  authored documents; never repair a generated view by hand. Test a fresh workspace
+  when changing collection, review, or task retrieval behavior.
 - **A request to prove maintenance works:** read
   [live_maintenance_test.md](references/live_maintenance_test.md). Distinguish a
   production semantic-maintenance test from the reversible controller smoke check
   in `scripts/smoke_test_project_memory.py`; the latter proves only mechanics.
+- **A change to personal collection, principle review, or task retrieval:** run
+  relevant regression checks and the bounded
+  [live personal-memory test](references/live_personal_memory_test.md). Trace real
+  dialogue through semantic distillation and a supported principle to an actual
+  task action. Do not report the full chain as working from fixture tests,
+  configuration readback, or retrieval alone. Fix defects in this shared skill.
 
 ## Completion
 

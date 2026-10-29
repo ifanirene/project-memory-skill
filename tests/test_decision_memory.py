@@ -44,6 +44,16 @@ def test_context_and_secrets_are_not_user_judgment():
     assert dm.clean_user('<send_user_message_question_reply>[{"question":"Do X?", "answer":"No"}]</send_user_message_question_reply>') == "No"
 
 
+def test_injected_skill_and_app_events_do_not_become_human_evidence():
+    skill = '<skill>\n<name>example</name>\nAlways use this reusable rule.\n</skill>'
+    navigation = '<external_codex_apps_open_page>{"page_id":null}</external_codex_apps_open_page>'
+    assert dm.clean_user(skill) == ''
+    assert dm.clean_user(navigation) == ''
+    assert dm.clean_user('<skill>Unfinished injected skill') == ''
+    assert dm.clean_user('Keep the real choice.\n' + skill) == 'Keep the real choice.'
+    assert dm.clean_user(navigation + '\nUse this for the stated question.') == 'Use this for the stated question.'
+
+
 def test_subagents_are_not_independent_people(tmp_path):
     path = session(tmp_path)
     text = path.read_text().replace('"source": "cli"', '"source": {"subagent": {}}')

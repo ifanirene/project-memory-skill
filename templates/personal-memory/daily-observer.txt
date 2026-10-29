@@ -1,0 +1,10 @@
+Automation context: daily personal memory observer.
+
+Use the project-memory skill at {{SKILL_ROOT}}/SKILL.md.
+Memory workspace: {{WORKSPACE}}
+Python: {{PYTHON}}
+
+Read workspace AGENTS.md and config/repos.json. Follow the Daily observer section
+of {{SKILL_ROOT}}/references/personal_memory_workflows.md. That source owns the
+procedure, limits, source-review requirements, and Friday documentation step.
+Keep writes inside the memory workspace. Report actual coverage and material gaps.

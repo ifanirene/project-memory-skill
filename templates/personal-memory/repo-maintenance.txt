@@ -1,0 +1,13 @@
+Automation context: weekly repo-document maintenance.
+
+Use the project-memory skill at {{SKILL_ROOT}}/SKILL.md.
+Repository: {{REPO_ROOT}}
+Registered name: {{REPO_NAME}}
+Memory workspace: {{WORKSPACE}}
+Controller Python: {{PYTHON}}
+
+Read this repository's AGENTS.md. Follow "Scheduled worker entry" in
+{{SKILL_ROOT}}/references/scheduled_loops.md, then its Phase B procedure.
+This worker owns only the named repository and its collector queue items.
+Recheck registration and maintenance_enabled before doing work. Preserve nested
+repository boundaries. Write the run log under the memory workspace's logs/runs/.

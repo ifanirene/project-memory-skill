@@ -17,12 +17,12 @@ alone never permits recovery. Do not delete the guard file.
 Separate learning from document upkeep:
 
 1. daily personal L1 Observer using completed dialog turns and decision notes
-2. weekly L2 reflection and a monthly L3 eligibility review
+2. weekly L2 principle review and monthly discussion of L3 core commitments
 3. weekly repo-documentation collection/maintenance through the existing queue
 
 Read [decision_memory.md](decision_memory.md) for the personal loop contract.
-Monthly gating applies only to L3, never to observation intake, backlog processing,
-or weekly reflection. Read automation configuration AND run artifacts before
+The monthly review never blocks observation intake, backlog processing, or L2
+use and review. Read automation configuration AND run artifacts before
 claiming a schedule is active or that a run succeeded. Preserve a paused task
 unless the user asks to resume it.
 
@@ -111,6 +111,60 @@ Run at most once per monitored repo after central collection. Each run may read
 only its own queue items and its own repo. It must not inspect sibling repos or
 write collector promotion files.
 
+### Scheduled worker entry
+
+For a trusted project using `sandbox_mode = "workspace-write"`, the user can
+authorize project-local `.codex/config.toml` to add only the collector's `state/`
+and `logs/runs/` to `sandbox_workspace_write.writable_roots`. This grants queue
+and log access without making the whole collector writable. Keep existing
+approval settings. Do not change permissions without authorization. Verify the
+effective project configuration and actual sandboxed writes, including a denied
+write outside those two directories. A manually escalated command alone does
+not prove that an unattended worker has persistent access.
+
+Generate each repo's entry prompt with `principle_library.py setup`. Use
+`config/prompts/maintenance-<registered-name>.txt` in its existing schedule.
+Only `maintenance_enabled: true` repos receive prompts; setup does not activate
+jobs. A previously generated prompt is not authorization after registration changes.
+The central collector excludes embedded Git repositories from documentation
+maintenance. Their personal-decision sources remain separately configured.
+
+1. Read the named repo's `AGENTS.md` and this reference. Use its own interpreter
+   requirements for repo commands and the entry's interpreter for the controller.
+   Read `repo_modes.md`, `memory_quality.md`, and `analysis_manifest.md` when
+   their operation applies. Use `paper-narrative` for substantial note rewrites.
+2. Record a unique UTC run ID, branch, HEAD, and Git status. Work on canonical
+   `main`, including unrelated dirty files. On detached HEAD or another branch,
+   report and defer edits. Never reset, checkout, clean, or commit.
+3. Check `memoryctl.py doctor --workspace <hub>` before queue mutations.
+   If the sandbox lacks hub access, obtain scoped write access before proceeding;
+   if unavailable, report an incomplete pass and leave queue state unchanged.
+   Run `bootstrap_repo_memory.py --repo <repo> --mode monitored --audit-only`
+   and the repo manifest schema check. Follow repo instructions for established
+   nonstandard manifest roots; an empty default scan is not proof of no manifests.
+4. List this repo's open and deferred queue items. Process at most four open
+   items and two large-note rewrites, newest target first. Claim before editing.
+   Read only their linked sources and this repo's relevant index, notes and lessons.
+   Preserve nested repository boundaries. Do not inspect sibling repositories.
+5. Apply the Phase B rules below. Reconcile an overlapping dirty document against
+   its current contents; defer conflicting edits rather than overwriting them.
+   At most one unqueued `AGENTS.md` or `.gitignore` repair is allowed when the
+   deterministic audit proves contract drift and protected facts are preserved.
+   A broad audit warning alone does not justify rewriting scientific notes.
+6. For one or two implicated current variants, validate exact manifest paths with
+   `--verify-files` and bounded hashing. Keep schema, file identity, historical
+   reconstructability, and scientific validation separate. Do not rerun analyses,
+   rewrite historical hashes, or fabricate missing manifests. Reopen deferred debt
+   only with evidence that its prerequisite changed. Report orphaned claims and
+   their owners; do not silently reset them.
+7. Finish every claim as resolved, deferred, or rejected with evidence. Check
+   changed links and the focused diff. Save a unique log in `<hub>/logs/runs/`,
+   including audits, changes, checks, and unresolved dependencies. Leave changes
+   uncommitted. Use a few lines for no change, otherwise about 200–300 words;
+   link detailed receipts and state one useful finding when there is one.
+
+### Phase B responsibilities
+
 Responsibilities:
 
 - claim open queue items assigned to the repo
@@ -166,6 +220,12 @@ Allowed targets:
 Do not edit code, data, generated outputs, manifests, or raw dialog archives.
 Maintenance may validate manifests and queue pipeline changes, but a pipeline
 must write its own native manifest after a real execution.
+
+`docs/LESSONS.md` remains the local home for reusable project guidance. A personal
+principle can explain a broader choice without replacing a precise local check.
+When both change, keep the local trigger/action/reason in lessons and the principle
+ID plus observed consequence in the owning note. Do not copy the entire personal
+library into each repo or count a mirrored lesson as a new human endorsement.
 
 ## Protected `AGENTS.md` information
 
@@ -243,6 +303,12 @@ Passing time, changing note hashes, or repeating an old rationale is insufficien
 
 ## Personal learning loops
 
+The executable handoffs and bounded run instructions live in
+[personal_memory_workflows.md](personal_memory_workflows.md). Generate entry prompts
+with `principle_library.py setup`; do not maintain another procedure in the scheduler.
+When updating an existing schedule, replace only its prompt with the generated
+entry and preserve its timing, state, model, environment, and notification settings.
+
 The personal Observer and Reflector use `decision_memory.py`; the Phase A/B
 sections above remain documentation operations. Their output counts are not
 personal-memory yield. Do not send maintenance automation logs through the
@@ -254,15 +320,17 @@ validate and apply. Keep active-session completed tails eligible. Report
 coverage gaps, backlog and the oldest unreviewed period; do not call a partial
 bootstrap complete. A remote failure must not silently become "no new signals".
 
-Reflector: compare new events weekly and re-evaluate existing candidates for
-counterexamples and changed scope. Keep first occurrences as candidates. Two
-independent human episodes can support a reflection even within one repo. Three
-human episodes spanning 28 days support automatic axiom eligibility, subject to
-semantic review. Actual confirmation dates establish stability; repeated agent
-compliance and no-change logs do not.
+Reflector: compare new events weekly and review existing principles for
+counterexamples, changed scope, useful applications, and corrections. One
+meaningful judgment can support a readable L2 principle; its source and tentative
+scope remain visible. Use one document per principle and a categorized index as
+described in [decision_memory.md](decision_memory.md#working-principle-library).
+The older ledger's evidence-status checks remain enforced; they do not gate L2
+use. Repeated agent compliance and no-change logs are not human confirmation.
 
-Run axiom eligibility monthly without skipping reflection in other weeks. New
-principles must predict a concrete future decision and state boundaries and costs.
+Review possible core commitments monthly and discuss them with the user. Do not
+automatically promote repeated technical rules into L3. Principles should explain
+the reusable reasoning, a concrete application, and important boundaries.
 Keep scientific findings, personal choices, and automation operations distinct.
 Prepare relevant mirrors for repo-local review; never edit monitored repos from
 the personal collector. See `personal_memory_bridge.md` for retrieval and mirrors.
